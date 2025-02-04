@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label"
 import { PasswordInput } from "./password-input"
 import { useToast } from "@/hooks/use-toast"
 
+import axios from "axios"
+
 export function LoginForm() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -17,21 +19,29 @@ export function LoginForm() {
         e.preventDefault()
         setIsLoading(true)
 
-        // Simulate login
-        setTimeout(() => {
-            if (email === "test@example.com" && password === "password") {
-                console.log("Login successful")
-            } else {
-                toast({
-                    title: "Login Failed",
-                    description: "Invalid email or password",
-                    variant: "destructive",
-                })
-            }
+        try {
+            const response = await axios.get("https://jsonplaceholder.typicode.com/users", {
+                params: {
+                    email: email,
+                    password: password,
+                },
+            })
+            console.log("Response:", response.data)
+            toast({
+                title: "Login Successful",
+                description: "You have successfully logged in.",
+                variant: "default",
+            })
             setIsLoading(false)
-        }, 2000)
+        } catch (error) {
+            console.error("Error:", error)
+            toast({
+                title: "Login Failed",
+                description: "Invalid email or password.",
+                variant: "destructive",
+            })
+        }
     }
-
     return (
         <form onSubmit={handleSubmit}>
             <div className="space-y-4">
@@ -59,7 +69,7 @@ export function LoginForm() {
             <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-6 bg-[#008033] hover:bg-[#006028] text-white font-semibold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#E8FE05] focus:ring-opacity-50"
+                className="w-full mt-6 bg-[#008033] hover:bg-[#006028] text-white font-semibold py-2 px-4 rounded-md transition duration-300 ease-in-out transform focus:outline-none focus:ring-2 focus:ring-[#E8FE05] focus:ring-opacity-50"
             >
                 {isLoading ? (
                     <div className="flex items-center justify-center">
