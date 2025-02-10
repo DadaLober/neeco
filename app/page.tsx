@@ -1,10 +1,15 @@
-'use server'
-
 import { BackgroundCarousel } from "@/app/(components)/carousel"
 import { LoginCard } from "@/app/(components)/login-card"
 import { Toaster } from "@/components/ui/toaster"
 
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+
 export default async function Login() {
+
+  const session = await auth();
+  if (session) redirect("/dashboard");
+
   return (
     <>
       <div className="min-h-screen relative overflow-hidden">

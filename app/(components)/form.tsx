@@ -1,16 +1,23 @@
+import { signIn } from "@/lib/auth"
+import { executeAction } from "@/lib/executeAction"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-import { signIn } from "@/lib/auth"
-
 export function LoginForm() {
-
     return (
-        <form action={async (formData) => {
-            "use server"
-            await signIn("credentials", formData)
-        }}>
+        <form
+            className="space-y-4"
+            action={async (formData) => {
+                "use server";
+                await executeAction({
+                    actionFn: async () => {
+                        await signIn("credentials", formData);
+                    },
+                });
+            }}
+        >
             <div className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="email" className="text-sm font-medium text-[#008033]">
@@ -21,6 +28,7 @@ export function LoginForm() {
                         type="email"
                         placeholder="email@example.com"
                         required
+                        autoComplete="email"
                         className="w-full px-3 py-2 border rounded-md border-[#008033] focus:outline-none focus:ring-2 focus:ring-[#E8FE05]"
                     />
                 </div>
@@ -32,6 +40,7 @@ export function LoginForm() {
                         name="password"
                         type="password"
                         required
+                        autoComplete="current-password"
                         className="w-full px-3 py-2 border rounded-md border-[#008033] focus:outline-none focus:ring-2 focus:ring-[#E8FE05] pr-10"
                     />
                 </div>

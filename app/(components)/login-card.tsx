@@ -1,8 +1,10 @@
+import { LoginForm } from "./form"
+
+import GithubSignIn from "./github-sign-in"
+
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import Image from "next/image"
-import { LoginForm } from "./login-form"
-import GithubSignIn from "./github-sign-in"
 
 export function LoginCard() {
     return (
