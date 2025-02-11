@@ -1,4 +1,4 @@
-import { signUp } from "@/lib/actions"
+import { signUp } from "@/actions/authActions"
 import { redirect } from "next/navigation"
 
 import { Button } from "@/components/ui/button"

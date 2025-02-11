@@ -1,6 +1,19 @@
+"use server"
+
+import { signIn } from "@/lib/auth";
+import { executeAction } from "./executeAction";
+
 import { schema } from "@/lib/schema";
 import db from "@/lib/db/db";
-import { executeAction } from "@/lib/executeAction";
+
+const loginUser = async function loginUser(formData: FormData) {
+    const result = await executeAction({
+        actionFn: async () => {
+            await signIn("credentials", formData);
+        },
+    });
+    return result;
+}
 
 const signUp = async (formData: FormData) => {
     return executeAction({
@@ -19,4 +32,4 @@ const signUp = async (formData: FormData) => {
     });
 };
 
-export { signUp };
+export { loginUser, signUp };

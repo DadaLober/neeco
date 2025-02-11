@@ -166,7 +166,7 @@ export default function LandingPage({
                         animate="visible"
                         className="flex flex-col mb-8 md:mb-12"
                     >
-                        <Image src="/logo.png" alt="NEECO" width={450} height={450} className="mx-auto mb-4" />
+                        <Image src="/logo.png" alt="NEECO" width={450} height={450} className="mx-auto mb-4" priority sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                     </motion.div>
                     <motion.div custom={1} variants={fadeUpVariants} initial="hidden" animate="visible">
                         <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-6 md:mb-8 tracking-tight">

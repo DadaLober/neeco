@@ -17,7 +17,7 @@ export function AuthCard({ title, subtitle, form, mode }: AuthCardProps) {
             {/* Left Column */}
             <div className="w-full md:w-1/2 p-4 md:p-8 flex flex-col items-center justify-center bg-gradient-to-br from-[#008033] to-[#1cb86a] text-white">
                 <div className="relative w-48 md:w-72 h-16 md:h-20 mb-4 md:mb-6">
-                    <Image src="/logo.png" alt="Logo" fill className="object-contain" />
+                    <Image src="/logo.png" alt="Logo" fill className="object-contain" priority sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                 </div>
                 <CardTitle className="text-2xl md:text-3xl font-bold text-white text-center">{title}</CardTitle>
                 <p className="text-xs md:text-sm text-white/80 mt-2 text-center">{subtitle}</p>
