@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 
 const agmaImages = ["/agma.jpg", "/coop.jpg", "/fire.jpg", "/sustain.jpg", "/women.jpg"]
 
-export function BackgroundCarousel() {
+export default function Carousel() {
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
     useEffect(() => {

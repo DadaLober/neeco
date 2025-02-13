@@ -22,6 +22,7 @@ model User {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
+  vouchers      Voucher[]       @relation("UserVouchers")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -82,4 +83,15 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+model Voucher {
+  id          String   @id @default(cuid())
+  referenceId String   @unique
+  itemType    String
+  employeeId  String
+  employee    User     @relation("UserVouchers", fields: [employeeId], references: [id])
+  isOIC       Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
