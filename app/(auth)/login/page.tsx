@@ -1,8 +1,16 @@
-import { LoginForm } from "@/app/(components)/login-form"
+import { auth } from "@/auth"
+import { LoginForm } from "@/components/auth/login-form"
 import Carousel from "@/app/(components)/carousel"
 import Image from "next/image"
+import { redirect } from "next/navigation"
 
-export default function LoginPage() {
+export default async function LoginPage() {
+    const session = await auth()
+
+    if (session) {
+        redirect("/")
+    }
+
     return (
         <div className="grid min-h-svh lg:grid-cols-2">
             <div className="flex flex-col gap-4 p-6 md:p-10">

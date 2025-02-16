@@ -1,13 +1,18 @@
-import { RegisterForm } from "@/app/(components)/register-form"
+import { auth } from "@/auth"
+import { RegisterForm } from "@/components/auth/register-form"
 import Carousel from "@/app/(components)/carousel"
 import Image from "next/image"
+import { redirect } from "next/navigation"
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+    const session = await auth()
+
+    if (session) {
+        redirect("/")
+    }
+
     return (
         <div className="grid min-h-svh lg:grid-cols-2">
-            <div className="relative hidden bg-muted lg:block">
-                <Carousel />
-            </div>
             <div className="flex flex-col gap-4 p-6 md:p-10">
                 <div className="w-full flex justify-center mt-4 sm:mt-8 lg:mt-0">
                     <a href="#" className="flex items-center">
@@ -26,6 +31,9 @@ export default function RegisterPage() {
                         <RegisterForm />
                     </div>
                 </div>
+            </div>
+            <div className="relative hidden bg-muted lg:block">
+                <Carousel />
             </div>
         </div>
     )

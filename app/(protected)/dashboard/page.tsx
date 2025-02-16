@@ -1,4 +1,3 @@
-import { SignOut } from "@/app/(components)/sign-out";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
@@ -13,8 +12,6 @@ const Page = async () => {
                 <p className="font-medium">{session.user?.email}</p>
                 <p className="text-gray-600">Session obj value: {JSON.stringify(session)}</p>
             </div>
-
-            <SignOut />
         </>
     );
 };
