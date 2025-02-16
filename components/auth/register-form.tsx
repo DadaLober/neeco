@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { register } from "@/actions/authActions"
@@ -56,6 +56,7 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
                             viewBox="0 0 20 20"
                             fill="currentColor"
                             className="h-4 w-4"
+                            aria-hidden="true"
                         >
                             {re.test(password) ? (
                                 <path
@@ -75,17 +76,19 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
     ) : null
 }
 
+const DEFAULT_VALUES: RegisterInput = {
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+}
+
 export function RegisterForm() {
     const [error, setError] = useState<string>("")
 
     const form = useForm<RegisterInput>({
         resolver: zodResolver(registerSchema),
-        defaultValues: {
-            name: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-        },
+        defaultValues: DEFAULT_VALUES,
     })
 
     async function onSubmit(values: RegisterInput) {
@@ -104,7 +107,7 @@ export function RegisterForm() {
                 <div className="flex flex-col items-center gap-2 text-center">
                     <h1 className="text-2xl font-bold">Create an account</h1>
                     <p className="text-balance text-sm text-muted-foreground">
-                        Enter your details below to create your account
+                        Enter your information below to create your account
                     </p>
                 </div>
                 {error && (
@@ -116,13 +119,12 @@ export function RegisterForm() {
                     <FormField
                         control={form.control}
                         name="name"
-                        render={({ field }: { field: ControllerRenderProps<RegisterInput, "name"> }) => (
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        placeholder="John Doe"
                                         disabled={form.formState.isSubmitting}
                                         autoComplete="name"
                                     />
@@ -134,7 +136,7 @@ export function RegisterForm() {
                     <FormField
                         control={form.control}
                         name="email"
-                        render={({ field }: { field: ControllerRenderProps<RegisterInput, "email"> }) => (
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
@@ -153,13 +155,12 @@ export function RegisterForm() {
                     <FormField
                         control={form.control}
                         name="password"
-                        render={({ field }: { field: ControllerRenderProps<RegisterInput, "password"> }) => (
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input
+                                    <PasswordInput
                                         {...field}
-                                        type="password"
                                         disabled={form.formState.isSubmitting}
                                         autoComplete="new-password"
                                     />
@@ -172,13 +173,12 @@ export function RegisterForm() {
                     <FormField
                         control={form.control}
                         name="confirmPassword"
-                        render={({ field }: { field: ControllerRenderProps<RegisterInput, "confirmPassword"> }) => (
+                        render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Confirm Password</FormLabel>
                                 <FormControl>
-                                    <Input
+                                    <PasswordInput
                                         {...field}
-                                        type="password"
                                         disabled={form.formState.isSubmitting}
                                         autoComplete="new-password"
                                     />

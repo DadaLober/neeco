@@ -1,8 +1,9 @@
 "use client"
 
+import { loginSchema } from "@/schemas"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { login } from "@/actions/authActions"
@@ -17,17 +18,19 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import type { ControllerRenderProps, FieldValues } from "react-hook-form"
-import { loginSchema } from "@/schemas"
+import { Input } from "../ui/input"
+
+const DEFAULT_VALUES: LoginInput = {
+    email: "",
+    password: "",
+}
 
 export function LoginForm() {
     const [error, setError] = useState<string>("")
 
     const form = useForm<LoginInput>({
         resolver: zodResolver(loginSchema),
-        defaultValues: {
-            email: "",
-            password: "",
-        },
+        defaultValues: DEFAULT_VALUES,
     })
 
     async function onSubmit(values: LoginInput) {
@@ -86,9 +89,8 @@ export function LoginForm() {
                                     </a>
                                 </div>
                                 <FormControl>
-                                    <Input
+                                    <PasswordInput
                                         {...field}
-                                        type="password"
                                         disabled={form.formState.isSubmitting}
                                         autoComplete="current-password"
                                     />

@@ -36,7 +36,7 @@ export async function login(values: LoginInput) {
         throw error
     }
 
-    redirect("/")
+    redirect("/dashboard")
 }
 
 export async function register(values: RegisterInput) {
@@ -74,5 +74,5 @@ export async function register(values: RegisterInput) {
         return { error: "Something went wrong" }
     }
 
-    redirect("/")
+    redirect("/login")
 }
