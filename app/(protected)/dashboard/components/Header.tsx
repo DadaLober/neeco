@@ -8,6 +8,7 @@ import {
   Moon,
   Sun,
   User,
+  Leaf,
 } from 'lucide-react';
 import {
   Dialog,
@@ -28,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from 'next-themes';
 import { signOut } from 'next-auth/react';
+import Link from 'next/link';
 
 export function Header() {
   const [mounted, setMounted] = useState(false);
@@ -44,14 +46,13 @@ export function Header() {
   };
 
   const handleSettingsClick = () => {
-    setIsDropdownOpen(false); // Close dropdown when opening settings
+    setIsDropdownOpen(false);
     setIsSettingsOpen(true);
   };
 
   const handleSettingsDialogChange = (open: boolean) => {
     setIsSettingsOpen(open);
     if (!open) {
-      // Small delay to prevent immediate dropdown trigger
       setTimeout(() => {
         setIsDropdownOpen(false);
       }, 100);
@@ -64,10 +65,21 @@ export function Header() {
 
   return (
     <header className="border-b bg-white dark:border-none dark:bg-[#008033]">
-      <div className="flex h-16 items-center px-4 justify-between">
-        <h2 className="text-lg font-semibold text-[#008033] dark:text-white">
-          Dashboard
-        </h2>
+      <div className="flex h-16 items-center px-4 lg:px-8 justify-between">
+        <div className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#008033] dark:bg-white">
+              <Leaf className="h-5 w-5 text-white dark:text-[#008033]" />
+            </div>
+            <span className="text-lg font-semibold text-[#008033] dark:text-white hidden sm:inline-block">
+              Neeco
+            </span>
+          </Link>
+          <div className="h-6 w-px bg-gray-200 dark:bg-white/20 mx-2" />
+          <h2 className="text-lg font-semibold text-[#008033] dark:text-white">
+            Dashboard
+          </h2>
+        </div>
 
         <div className="flex items-center gap-4">
           {/* Notifications */}
