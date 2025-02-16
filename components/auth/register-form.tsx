@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form"
 import type { ControllerRenderProps } from "react-hook-form"
 import { registerSchema } from "@/schemas"
+import { Input } from "../ui/input"
 
 function PasswordStrengthIndicator({ password }: { password: string }) {
     const requirements = [

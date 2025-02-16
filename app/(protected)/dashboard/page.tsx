@@ -1,8 +1,12 @@
+import { Header } from './components/Header';
+
 export default function DashboardPage() {
     return (
         <div>
-            <h1>Dashboard Page</h1>
+            <Header />
+            <main className="container mx-auto p-4">
+                <h1>Dashboard Content</h1>
+            </main>
         </div>
     )
 }
-
