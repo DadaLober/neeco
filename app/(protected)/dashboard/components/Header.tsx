@@ -7,21 +7,32 @@ import {
   LogOut,
   Moon,
   Sun,
+  User,
 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from 'next-themes';
 import { signOut } from 'next-auth/react';
 
 export function Header() {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -30,6 +41,21 @@ export function Header() {
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/login' });
+  };
+
+  const handleSettingsClick = () => {
+    setIsDropdownOpen(false); // Close dropdown when opening settings
+    setIsSettingsOpen(true);
+  };
+
+  const handleSettingsDialogChange = (open: boolean) => {
+    setIsSettingsOpen(open);
+    if (!open) {
+      // Small delay to prevent immediate dropdown trigger
+      setTimeout(() => {
+        setIsDropdownOpen(false);
+      }, 100);
+    }
   };
 
   if (!mounted) {
@@ -56,31 +82,66 @@ export function Header() {
             </span>
           </Button>
 
-          {/* Dark Mode Toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="text-[#008033] hover:bg-[#008033]/10 dark:text-white dark:hover:bg-white/20"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </Button>
-
-          {/* Settings Modal */}
-          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-            <DialogTrigger asChild>
+          {/* Avatar Dropdown */}
+          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
-                className="text-[#008033] hover:bg-[#008033]/10 dark:text-white dark:hover:bg-white/20"
+                className="relative h-8 w-8 rounded-full"
               >
-                <Settings className="h-5 w-5" />
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/avatars/user.png" alt="User" />
+                  <AvatarFallback className="bg-[#008033]/10 text-[#008033] dark:bg-white/10 dark:text-white">
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
               </Button>
-            </DialogTrigger>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">John Doe</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    john.doe@example.com
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem>
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleSettingsClick}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                  {theme === 'dark' ? (
+                    <>
+                      <Sun className="mr-2 h-4 w-4" />
+                      <span>Light Mode</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="mr-2 h-4 w-4" />
+                      <span>Dark Mode</span>
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-red-600 dark:text-red-400"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Settings Dialog */}
+          <Dialog open={isSettingsOpen} onOpenChange={handleSettingsDialogChange}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Settings</DialogTitle>
@@ -93,16 +154,6 @@ export function Header() {
               </div>
             </DialogContent>
           </Dialog>
-
-          {/* Logout */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleLogout}
-            className="text-[#008033] hover:bg-[#008033]/10 dark:text-white dark:hover:bg-white/20"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
         </div>
       </div>
     </header>
