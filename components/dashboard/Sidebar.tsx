@@ -167,7 +167,7 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "relative hidden lg:block h-screen border-r pt-16 transition-all duration-300 dark:border-none dark:bg-[#006629]",
+        "relative hidden lg:block h-full border-r pt-16 transition-all duration-300 dark:border-none dark:bg-[#006629]",
         collapsed ? "w-16" : "w-60"
       )}
     >
