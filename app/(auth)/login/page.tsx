@@ -1,6 +1,6 @@
 import { auth } from "@/auth"
 import { LoginForm } from "@/components/auth/login-form"
-import Carousel from "@/app/(components)/carousel"
+import Carousel from "@/components/auth/carousel"
 import Image from "next/image"
 import { redirect } from "next/navigation"
 
