@@ -1,5 +1,11 @@
-import LandingPage from '@/components/auth/landing'
+import RandomShapesGrid from "@/components/auth/landing"
+import "./globals.css"
 
-export default function Page() {
-  return <LandingPage />
+export default function Home() {
+  return (
+    <main className="min-h-screen">
+      <RandomShapesGrid />
+    </main>
+  )
 }
+

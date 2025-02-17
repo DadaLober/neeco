@@ -8,7 +8,6 @@ import {
   Moon,
   Sun,
   User,
-  Leaf,
 } from 'lucide-react';
 import {
   Dialog,
@@ -28,10 +27,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTheme } from 'next-themes';
-import { signOut } from 'next-auth/react';
+import Image from 'next/image';
+import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export function Header() {
+  const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -68,12 +69,16 @@ export function Header() {
       <div className="flex h-16 items-center px-4 lg:px-8 justify-between">
         <div className="flex items-center gap-2">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#008033] dark:bg-white">
-              <Leaf className="h-5 w-5 text-white dark:text-[#008033]" />
+            <div className="hidden xl:flex items-center justify-center rounded-lg">
+              <Image
+                src="/logo.png"
+                alt="Neeco Logo"
+                width={150}
+                height={100}
+                className="w-auto h-auto"
+                priority
+              />
             </div>
-            <span className="text-lg font-semibold text-[#008033] dark:text-white hidden sm:inline-block">
-              Neeco
-            </span>
           </Link>
           <div className="h-6 w-px bg-gray-200 dark:bg-white/20 mx-2" />
           <h2 className="text-lg font-semibold text-[#008033] dark:text-white">
@@ -112,9 +117,11 @@ export function Header() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">John Doe</p>
+                  <p className="text-sm font-medium leading-none">
+                    {session?.user?.name || 'Guest'}
+                  </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    john.doe@example.com
+                    {session?.user?.email || 'No email'}
                   </p>
                 </div>
               </DropdownMenuLabel>
