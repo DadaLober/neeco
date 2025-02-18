@@ -16,7 +16,6 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import type { ControllerRenderProps } from "react-hook-form"
 import { registerSchema } from "@/schemas"
 import { Input } from "../ui/input"
 

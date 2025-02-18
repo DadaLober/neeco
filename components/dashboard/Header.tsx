@@ -88,7 +88,7 @@ export function Header() {
             </div>
           </Link>
           <div className="hidden xl:flex h-6 w-px bg-gray-200 dark:bg-white/20 mx-2" />
-          <h2 className="text-lg font-semibold text-[#008033] dark:text-white">
+          <h2 className="hidden xl:flex text-lg font-semibold text-[#008033] dark:text-white">
             Dashboard
           </h2>
         </div>
@@ -155,15 +155,15 @@ export function Header() {
           </DropdownMenu>
 
           {/* Profile Dialog */}
-          <ProfileDialog 
-            isOpen={isProfileOpen} 
-            onOpenChange={handleProfileDialogChange} 
+          <ProfileDialog
+            isOpen={isProfileOpen}
+            onOpenChange={handleProfileDialogChange}
           />
 
           {/* Settings Dialog */}
-          <UserSettings 
-            isOpen={isSettingsOpen} 
-            onOpenChange={handleSettingsDialogChange} 
+          <UserSettings
+            isOpen={isSettingsOpen}
+            onOpenChange={handleSettingsDialogChange}
           />
         </div>
       </div>

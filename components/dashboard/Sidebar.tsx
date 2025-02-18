@@ -17,14 +17,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { 
-  Sheet, 
-  SheetContent, 
+import {
+  Sheet,
+  SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger 
+  SheetTrigger
 } from "@/components/ui/sheet";
-import { signOut } from 'next-auth/react';
 
 const sidebarLinks = [
   {
@@ -66,11 +65,7 @@ interface SidebarContentProps {
 
 function SidebarContent({ className, collapsed }: SidebarContentProps) {
   const pathname = usePathname();
-  
-  const handleLogout = () => {
-    signOut({ callbackUrl: '/login' });
-  };
-  
+
   return (
     <div className={cn("relative min-h-full", className)}>
       <div className="px-3 py-2">
@@ -82,8 +77,8 @@ function SidebarContent({ className, collapsed }: SidebarContentProps) {
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-all",
                 collapsed ? "justify-center" : "justify-start",
-                pathname === link.href ? 
-                  "bg-[#008033] text-white dark:bg-[#008033] dark:text-white cursor-default" : 
+                pathname === link.href ?
+                  "bg-[#008033] text-white dark:bg-[#008033] dark:text-white cursor-default" :
                   "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
               )}
             >
@@ -96,7 +91,7 @@ function SidebarContent({ className, collapsed }: SidebarContentProps) {
           ))}
         </div>
       </div>
-      
+
       {/* Bottom Buttons */}
       <div className={cn(
         "absolute bottom-0 left-0 right-0 p-3 space-y-2 border-t bg-background dark:bg-[#006629] dark:border-[#008033]",
@@ -110,15 +105,6 @@ function SidebarContent({ className, collapsed }: SidebarContentProps) {
         >
           <HelpCircle className={cn("h-4 w-4", collapsed ? "" : "mr-2")} />
           {!collapsed && "Help"}
-        </Button>
-        <Button
-          variant="ghost"
-          size={collapsed ? "icon" : "default"}
-          className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 dark:text-red-300 dark:hover:text-red-200 dark:hover:bg-red-500/20"
-          onClick={handleLogout}
-        >
-          <LogOut className={cn("h-4 w-4", collapsed ? "" : "mr-2")} />
-          {!collapsed && "Logout"}
         </Button>
       </div>
     </div>
