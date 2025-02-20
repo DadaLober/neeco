@@ -35,9 +35,16 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Loader2, ArrowUpDown, Search } from 'lucide-react';
+import { Loader2, ArrowUpDown, Search, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'; 
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
 
 type User = {
   id: string;
