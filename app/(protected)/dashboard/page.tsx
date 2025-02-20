@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { isAdmin } from "@/actions/roleActions";
 
 export default async function DashboardPage() {
 
@@ -9,6 +10,13 @@ export default async function DashboardPage() {
   if (!session) {
     redirect("/login");
   }
+
+  const userRole = session?.user?.role;
+
+  if (!(await isAdmin(userRole))) {
+    return console.log("User is not an admin");
+  }
+
 
   // Get current time for greeting
   const currentHour = new Date().getHours();

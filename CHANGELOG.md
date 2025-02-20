@@ -47,6 +47,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified name input to be disabled by default, maintaining layout consistency
 - Implemented dynamic input value and disabled state for name editing
 - Refined name editing interaction to use a single input component
+- Upgraded user role management from string-based to type-safe enum
+- Introduced granular user roles: USER, ADMIN, and MODERATOR
+- Enhanced Prisma schema to support more comprehensive user management
+- Replaced Prisma enum with string-based role to ensure MSSQL compatibility
+- Added database-level check constraint to validate user roles
+- Maintained role-based access control using string literals: 'USER', 'ADMIN', 'MODERATOR'
+- Removed database-level role constraint due to MSSQL limitations
+- Implemented application-level role validation
+- Ensured type safety and consistent role management
+- Migrated role validation from client-side utility to server actions
+- Improved security by performing role checks on the server
+- Updated NextAuth configuration to support user roles
+- Extended session and token interfaces to include role information
 
 ### Added
 - Comprehensive settings frontend in Header component
@@ -71,6 +84,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created new `ProfileDialog.tsx` component for user profile management
 - Added avatar upload and preview functionality in profile dialog
 - Implemented profile dialog with name and email editing capabilities
+- Implemented robust role-based access control with `UserRole` enum
+- Added admin-specific user tracking fields:
+  - `isActive` to enable/disable user accounts
+  - `lastLogin` to track user access times
+  - `loginAttempts` to monitor and prevent brute-force attacks
+- Created `roleValidation.ts` utility for robust role management
+  - Defined type-safe `UserRole` with allowed roles
+  - Implemented role validation functions
+  - Added runtime checks for user roles
+- Created `roleActions.ts` server actions for role management
+  - Implemented server-side role validation
+  - Added utility functions for role checking:
+    - `isAdmin()`
+    - `isAdminOrModerator()`
+  - Moved role validation to server-side for enhanced security
+- Enhanced authentication system with role-based access
+  - Added `role` to user session and JWT token
+  - Created type definitions for role in authentication
+  - Implemented default 'USER' role for new accounts
+  - Added role propagation through authentication flow
 
 ### Improved
 - User interface for settings dialog
@@ -96,6 +129,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Develop full workflow for account email and password changes
 - Create backend endpoints for account management features
 - Implement full Two-Factor Authentication (2FA) toggle functionality
+- Develop admin dashboard for user account management
+- Implement role-based access control (RBAC) middleware
+- Create admin-specific API endpoints for user management
 
 ## [0.1.0] - 2025-02-17
 

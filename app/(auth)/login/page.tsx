@@ -2,14 +2,8 @@ import { auth } from "@/auth"
 import { LoginForm } from "@/components/auth/login-form"
 import Carousel from "@/components/auth/carousel"
 import Image from "next/image"
-import { redirect } from "next/navigation"
 
 export default async function LoginPage() {
-    const session = await auth()
-
-    if (session) {
-        redirect("/")
-    }
 
     return (
         <div className="grid min-h-svh lg:grid-cols-2">

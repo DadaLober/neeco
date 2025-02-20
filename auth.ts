@@ -58,6 +58,7 @@ export const {
             id: user.id,
             email: user.email,
             name: user.name,
+            role: user.role || 'USER', 
           }
         } catch (error) {
           console.error("Auth error:", error)
@@ -67,11 +68,18 @@ export const {
     })
   ],
   callbacks: {
-    session({ session, token }) {
+    async session({ session, token }) {
       if (token.sub) {
         session.user.id = token.sub
       }
+      session.user.role = token.role as string || 'USER'
       return session
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role
+      }
+      return token
     }
   },
 })
