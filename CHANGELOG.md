@@ -99,21 +99,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `isAdmin()`
     - `isAdminOrModerator()`
   - Moved role validation to server-side for enhanced security
-- Enhanced authentication system with role-based access
-  - Added `role` to user session and JWT token
-  - Created type definitions for role in authentication
-  - Implemented default 'USER' role for new accounts
-  - Added role propagation through authentication flow
 - Comprehensive admin dashboard for user management
+  - Secure, role-based admin page at `/admin`
   - User listing with detailed account information
-  - Role management with dynamic role selection
-  - User activation/deactivation controls
+    - Displays user ID, name, email, role, status, last login, and login attempts
+  - Dynamic role management with dropdown selection
+  - User activation/deactivation toggle functionality
   - User deletion with confirmation dialog
   - Server-side role and permission validation
   - Enhanced user tracking with login attempts and last login timestamp
 - Prisma schema updates to support advanced user management
+  - Added `isActive` field to enable/disable user accounts
+  - Added `lastLogin` to track user access times
+  - Added `loginAttempts` to monitor and prevent brute-force attacks
 - Server actions for secure user management operations
+  - `getAllUsers()`: Retrieve paginated user list with admin access
+  - `updateUserRole()`: Modify user roles securely
+  - `toggleUserActivation()`: Enable/disable user accounts
+  - `deleteUser()`: Remove user accounts with admin confirmation
 - Role-based access control for admin dashboard
+  - Strict server-side role checking
+  - Fallback to access denied page for unauthorized users
+- Enhanced admin dashboard user management features
+  - Client-side pagination with dynamic page controls
+    - Configurable users per page
+    - Previous/Next page navigation
+    - Total page count display
+  - Real-time user search functionality
+    - Search across name, email, and role fields
+    - Instant filtering of user list
+  - Improved loading state management
+    - Animated loading spinner during data fetch
+    - Smooth transition between loading and content states
+  - Empty state handling for user list
+    - Informative message when no users match search criteria
+- Performance optimizations in user management interface
+  - Implemented memoization for search and pagination
+  - Reduced unnecessary re-renders
+  - Efficient client-side data processing
+- Advanced user management filtering and sorting
+  - Comprehensive column-based sorting
+    - Sortable columns: Name, Email, Role, Status, Last Login, Login Attempts
+    - Toggle between ascending and descending order
+    - Visual sorting indicators with ArrowUpDown icon
+  - Enhanced search capabilities
+    - General search across multiple fields
+    - Dedicated email filter with clear functionality
+  - Intelligent sorting algorithm
+    - Handles different data types (strings, dates, booleans)
+    - Robust null and undefined value handling
+  - Persistent sorting state across pagination
+- Advanced search column selection
+  - Toggleable search columns with visual indicators
+  - Dynamic search across multiple user attributes
+    - Name
+    - Email
+    - Role
+    - Login Attempts
+  - Intuitive column selection with single-character buttons
+  - Flexible search scope configuration
+- Enhanced sorting visualization
+  - Active sorting column highlighted with green background
+  - Directional sorting indicators with color and rotation
+  - Immediate visual feedback on sorting state
+- Enhanced search interface with column selection dropdown
+  - Intuitive dropdown to select search column
+  - Dynamic placeholder based on selected column
+  - Improved search experience with clear column targeting
+  - Readable column names in dropdown
+- Refined search input design
+  - Search icon for visual clarity
+  - Seamless integration with column selection
+- Enhanced column sorting interaction
+  - Two-step column sorting mechanism
+    - First click: Sort in ascending order
+    - Second click: Sort in descending order
+    - Third click: Reset sorting to default state
+  - Intelligent sorting reset functionality
+  - Seamless sorting state management
 
 ### Improved
 - User interface for settings dialog
@@ -128,6 +191,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced security for admin-level operations
 - Granular user management capabilities
 - User tracking and monitoring features
+- Error handling and user feedback with toast notifications
+- Separation of concerns between client and server components
+- User management interface responsiveness
+- Search and filtering user experience
+- Data loading and state management
+- Visual feedback during asynchronous operations
+- User management search experience
+- Data exploration and analysis capabilities
+- Flexibility in user list navigation
+- Visual feedback during sorting operations
+- Search flexibility and user control
+- Visual hierarchy in user management interface
+- User interaction with search and sorting mechanisms
+- User search interaction
+- Search input usability
+- Visual design of search components
+- User interaction with table sorting
+- Sorting state transitions
+- Flexibility in data exploration
 
 ### Technical Improvements
 - Added semantic structure to settings dialog
