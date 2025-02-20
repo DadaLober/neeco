@@ -37,6 +37,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Loader2, ArrowUpDown, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'; 
 
 type User = {
   id: string;
@@ -226,6 +227,17 @@ export function UserManagement() {
     }
   };
 
+  const renderLastLogin = (lastLogin: Date | null) => {
+    if (!lastLogin) return 'Never';
+    
+    try {
+      return formatDistanceToNow(lastLogin, { addSuffix: true });
+    } catch (error) {
+      console.error('Error formatting last login:', error);
+      return 'Invalid Date';
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -344,7 +356,7 @@ export function UserManagement() {
                   {user.isActive ? 'Active' : 'Inactive'}
                 </Badge>
               </TableCell>
-              <TableCell>{user.lastLogin?.toLocaleString() || 'Never'}</TableCell>
+              <TableCell>{renderLastLogin(user.lastLogin)}</TableCell>
               <TableCell>{user.loginAttempts}</TableCell>
               <TableCell>
                 <div className="flex space-x-2">

@@ -19,13 +19,38 @@ export async function login(values: LoginInput) {
     }
 
     try {
+        const user = await prisma.user.findUnique({
+            where: { email: values.email }
+        });
+
+        if (!user || !user.isActive) {
+            return { error: "Account is not active" };
+        }
+
         await signIn("credentials", {
             email: values.email,
             password: values.password,
             redirect: false,
         })
+
+        // Update last login and reset login attempts
+        await prisma.user.update({
+            where: { email: values.email },
+            data: {
+                lastLogin: new Date(),
+                loginAttempts: 0
+            }
+        });
     } catch (error) {
         if (error instanceof AuthError) {
+            // Increment login attempts on failure
+            await prisma.user.update({
+                where: { email: values.email },
+                data: {
+                    loginAttempts: { increment: 1 }
+                }
+            });
+
             switch (error.type) {
                 case "CredentialsSignin":
                     return { error: "Invalid credentials" }

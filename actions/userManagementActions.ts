@@ -44,6 +44,42 @@ export async function updateUserRole(userId: string, newRole: string) {
   return updatedUser;
 }
 
+export async function updateUserStatus(userId: string, isActive: boolean) {
+  const session = await auth();
+  const userRole = session?.user?.role;
+
+  if (!(await isAdmin(userRole))) {
+    throw new Error('Unauthorized: Admin access required');
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: { 
+      isActive,
+      // Reset login attempts if account is reactivated
+      ...(isActive && { loginAttempts: 0 }) 
+    }
+  });
+}
+
+export async function resetUserLoginAttempts(userId: string) {
+  const session = await auth();
+  const userRole = session?.user?.role;
+
+  if (!(await isAdmin(userRole))) {
+    throw new Error('Unauthorized: Admin access required');
+  }
+
+  return prisma.user.update({
+    where: { id: userId },
+    data: { 
+      loginAttempts: 0,
+      // Optional: Clear last login if needed for security
+      // lastLogin: null 
+    }
+  });
+}
+
 export async function toggleUserActivation(userId: string) {
   const session = await auth();
   const userRole = session?.user?.role;
