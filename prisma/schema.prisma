@@ -15,7 +15,7 @@ model User {
   name          String?
   email         String?         @unique
   password      String?
-  role          String          @default("USER")
+  role          String   @default("USER")
   emailVerified DateTime?
   image         String?
   accounts      Account[]
@@ -25,9 +25,9 @@ model User {
   vouchers      Voucher[]       @relation("UserVouchers")
 
   // Admin-specific tracking
-  isActive      Boolean         @default(true)
+  isActive      Boolean  @default(true)
   lastLogin     DateTime?
-  loginAttempts Int             @default(0)
+  loginAttempts Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

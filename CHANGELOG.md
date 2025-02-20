@@ -104,6 +104,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created type definitions for role in authentication
   - Implemented default 'USER' role for new accounts
   - Added role propagation through authentication flow
+- Comprehensive admin dashboard for user management
+  - User listing with detailed account information
+  - Role management with dynamic role selection
+  - User activation/deactivation controls
+  - User deletion with confirmation dialog
+  - Server-side role and permission validation
+  - Enhanced user tracking with login attempts and last login timestamp
+- Prisma schema updates to support advanced user management
+- Server actions for secure user management operations
+- Role-based access control for admin dashboard
 
 ### Improved
 - User interface for settings dialog
@@ -115,6 +125,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Color scheme and styling of critical account actions
 - Visual hierarchy in settings Danger Zone section
 - Overall design cohesion of settings interface
+- Enhanced security for admin-level operations
+- Granular user management capabilities
+- User tracking and monitoring features
 
 ### Technical Improvements
 - Added semantic structure to settings dialog
