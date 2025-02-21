@@ -23,7 +23,6 @@ interface ProfileDialogProps {
 
 export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
   const { data: session, update } = useSession();
-  console.log(session);
   const [name, setName] = useState(session?.user?.name || '');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isNameEditing, setIsNameEditing] = useState(false);

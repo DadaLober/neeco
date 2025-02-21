@@ -10,8 +10,6 @@ export default async function AdminDashboardPage() {
     redirect("/login");
   }
 
-  console.log(session);
-
   const userRole = session?.user?.role;
 
   if (!(await isAdmin(userRole))) {
