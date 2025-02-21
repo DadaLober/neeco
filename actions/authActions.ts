@@ -27,12 +27,6 @@ export async function login(values: LoginInput) {
             return { error: "Account is not active" };
         }
 
-        await signIn("credentials", {
-            email: values.email,
-            password: values.password,
-            redirect: false,
-        })
-
         // Update last login and reset login attempts
         await prisma.user.update({
             where: { email: values.email },
@@ -41,6 +35,14 @@ export async function login(values: LoginInput) {
                 loginAttempts: 0
             }
         });
+
+        await signIn("credentials", {
+            email: values.email,
+            password: values.password,
+            redirect: true,
+            redirectTo: "/dashboard"
+        })
+
     } catch (error) {
         if (error instanceof AuthError) {
             // Increment login attempts on failure
@@ -60,8 +62,6 @@ export async function login(values: LoginInput) {
         }
         throw error
     }
-
-    redirect("/dashboard")
 }
 
 export async function register(values: RegisterInput) {
@@ -89,15 +89,8 @@ export async function register(values: RegisterInput) {
                 password: hashedPassword,
             },
         })
-
-        await signIn("credentials", {
-            email: values.email,
-            password: values.password,
-            redirect: false,
-        })
+        redirect("/login")
     } catch (error) {
         return { error: "Something went wrong" }
     }
-
-    redirect("/login")
 }

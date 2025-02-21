@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Camera, Save, X, Edit, Check } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { updateUserProfile } from '@/actions/profileActions';
 
 interface ProfileDialogProps {
   isOpen: boolean;
@@ -21,7 +22,8 @@ interface ProfileDialogProps {
 }
 
 export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
+  console.log(session);
   const [name, setName] = useState(session?.user?.name || '');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isNameEditing, setIsNameEditing] = useState(false);
@@ -55,9 +57,41 @@ export function ProfileDialog({ isOpen, onOpenChange }: ProfileDialogProps) {
   };
 
   const handleSave = async () => {
-    // TODO: Implement profile update logic
-    console.log('Saving profile', { name, avatarPreview });
-    onOpenChange(false);
+    const formData = new FormData();
+    
+    // Add name if changed
+    if (editedName !== name) {
+      formData.append('name', editedName);
+    }
+
+    // Add avatar if exists
+    if (avatarPreview) {
+      const avatarFile = await fetch(avatarPreview)
+        .then(r => r.blob())
+        .then(blob => new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
+      formData.append('avatar', avatarFile);
+    }
+
+    try {
+      const result = await updateUserProfile(formData);
+      
+      // Update local session if server action was successful
+      if (result.user) {
+        await update({
+          name: result.user.name || undefined,
+          image: result.user.image || undefined
+        });
+        
+        // Reset editing states
+        setIsNameEditing(false);
+        setAvatarPreview(null);
+        
+        // Close dialog
+        onOpenChange(false);
+      }
+    } catch (error) {
+      console.error('Profile update failed:', error);
+    }
   };
 
   return (
