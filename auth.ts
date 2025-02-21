@@ -58,7 +58,8 @@ export const {
             id: user.id,
             email: user.email,
             name: user.name,
-            role: user.role || 'USER', 
+            role: user.role || 'USER',
+            image: user.image,
           }
         } catch (error) {
           console.error("Auth error:", error)

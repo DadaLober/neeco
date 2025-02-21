@@ -1,50 +1,43 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react';
-import { 
-  getAllUsers, 
-  updateUserRole, 
-  toggleUserActivation, 
-  deleteUser 
-} from '@/actions/userManagementActions';
+import {
+  getAllUsers,
+  updateUserRole,
+  toggleUserActivation,
+  deleteUser
+} from '@/actions/adminActions';
 import { getUserRoles } from '@/actions/roleActions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription, 
-  DialogFooter 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Loader2, ArrowUpDown, Search, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns/formatDistanceToNow'; 
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
+import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 
 type User = {
   id: string;
@@ -76,16 +69,16 @@ export function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [searchColumns, setSearchColumns] = useState<SearchColumn[]>(['name', 'email', 'role']);
   const [selectedSearchColumn, setSelectedSearchColumn] = useState<SearchColumn>('name');
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
-  
+
   // Sorting states
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -108,7 +101,7 @@ export function UserManagement() {
   }, []);
 
   const toggleSearchColumn = (column: SearchColumn) => {
-    setSearchColumns(prev => 
+    setSearchColumns(prev =>
       prev.includes(column)
         ? prev.filter(c => c !== column)
         : [...prev, column]
@@ -123,7 +116,7 @@ export function UserManagement() {
       // Check if the search term matches any of the selected columns
       return searchColumns.some(column => {
         const value = user[column];
-        
+
         // Handle null or undefined values
         if (value == null) return false;
 
@@ -149,8 +142,8 @@ export function UserManagement() {
       if (sortKey === 'lastLogin') {
         const dateA = valueA as Date;
         const dateB = valueB as Date;
-        return sortDirection === 'asc' 
-          ? dateA.getTime() - dateB.getTime() 
+        return sortDirection === 'asc'
+          ? dateA.getTime() - dateB.getTime()
           : dateB.getTime() - dateA.getTime();
       }
 
@@ -236,7 +229,7 @@ export function UserManagement() {
 
   const renderLastLogin = (lastLogin: Date | null) => {
     if (!lastLogin) return 'Never';
-    
+
     try {
       return formatDistanceToNow(lastLogin, { addSuffix: true });
     } catch (error) {
@@ -258,7 +251,7 @@ export function UserManagement() {
       <div className="flex justify-between mb-4 space-x-4">
         <div className="flex space-x-2 flex-grow">
           <div className="relative flex-grow flex items-center">
-            <Select 
+            <Select
               value={selectedSearchColumn}
               onValueChange={(value: SearchColumn) => setSelectedSearchColumn(value)}
             >
@@ -274,7 +267,7 @@ export function UserManagement() {
               </SelectContent>
             </Select>
             <div className="relative flex-grow">
-              <Input 
+              <Input
                 placeholder={`Search by ${COLUMN_NAMES[selectedSearchColumn]}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -287,8 +280,8 @@ export function UserManagement() {
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
           >
@@ -297,8 +290,8 @@ export function UserManagement() {
           <span className="self-center">
             Page {currentPage} of {totalPages}
           </span>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
           >
@@ -310,7 +303,7 @@ export function UserManagement() {
         <TableHeader>
           <TableRow>
             {(['name', 'email', 'role', 'isActive', 'lastLogin', 'loginAttempts'] as SortKey[]).map(column => (
-              <TableHead 
+              <TableHead
                 key={column}
                 className={cn(
                   "cursor-pointer hover:bg-gray-100 transition-colors",
@@ -321,13 +314,13 @@ export function UserManagement() {
                 <div className="flex items-center justify-between">
                   <span>{column === 'isActive' ? 'Status' : column.charAt(0).toUpperCase() + column.slice(1)}</span>
                   <div className="flex items-center">
-                    <ArrowUpDown 
+                    <ArrowUpDown
                       className={cn(
                         "ml-2 h-4 w-4 transition-colors",
-                        sortKey === column 
-                          ? (sortDirection === 'asc' 
-                              ? "text-green-600 rotate-180" 
-                              : "text-green-600")
+                        sortKey === column
+                          ? (sortDirection === 'asc'
+                            ? "text-green-600 rotate-180"
+                            : "text-green-600")
                           : "text-gray-400"
                       )}
                     />
@@ -344,8 +337,8 @@ export function UserManagement() {
               <TableCell>{user.name || 'N/A'}</TableCell>
               <TableCell>{user.email || 'N/A'}</TableCell>
               <TableCell>
-                <Select 
-                  value={user.role} 
+                <Select
+                  value={user.role}
                   onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
                 >
                   <SelectTrigger>
@@ -367,15 +360,15 @@ export function UserManagement() {
               <TableCell>{user.loginAttempts}</TableCell>
               <TableCell>
                 <div className="flex space-x-2">
-                  <Button 
-                    variant={user.isActive ? 'destructive' : 'default'} 
+                  <Button
+                    variant={user.isActive ? 'destructive' : 'default'}
                     size="sm"
                     onClick={() => handleToggleActivation(user.id)}
                   >
                     {user.isActive ? 'Deactivate' : 'Activate'}
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       setSelectedUser(user);
@@ -402,19 +395,19 @@ export function UserManagement() {
           <DialogHeader>
             <DialogTitle>Delete User</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the user {selectedUser?.name}? 
+              Are you sure you want to delete the user {selectedUser?.name}?
               This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleDeleteUser}
             >
               Delete
