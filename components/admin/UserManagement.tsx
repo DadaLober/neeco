@@ -48,6 +48,9 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 
+// Import the new UserManagementSkeleton
+import { UserManagementSkeleton } from './UserManagementSkeleton';
+
 type User = {
   id: string;
   name: string | null;
@@ -72,7 +75,34 @@ const COLUMN_NAMES: Record<SearchColumn, string> = {
   loginAttempts: 'Login Attempts'
 };
 
+const UserManagementEmptyState = () => {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg">
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        className="h-16 w-16 text-gray-400 mb-4" 
+        fill="none" 
+        viewBox="0 0 24 24" 
+        stroke="currentColor"
+      >
+        <path 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          strokeWidth={2} 
+          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" 
+        />
+      </svg>
+      <h2 className="text-xl font-semibold text-gray-600 mb-2">No Users Found</h2>
+      <p className="text-gray-500 text-center mb-4">
+        There are currently no users in the system. 
+        {/* You can add an action button here if needed */}
+      </p>
+    </div>
+  );
+};
+
 export function UserManagement() {
+  // Base data states
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -86,14 +116,67 @@ export function UserManagement() {
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(10);
+  const [usersPerPage] = useState(5);
 
   // Sorting states
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
+  // Memoized filtered users
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      // If no search columns are selected, return all users
+      if (searchColumns.length === 0) return true;
+
+      // Check if the search term matches any of the selected columns
+      return searchColumns.some(column => {
+        const value = user[column];
+        const searchValue = String(value).toLowerCase();
+        return searchValue.includes(searchTerm.toLowerCase());
+      });
+    });
+  }, [users, searchTerm, searchColumns]);
+
+  // Memoized sorted users
+  const sortedUsers = useMemo(() => {
+    if (!sortKey) return filteredUsers;
+
+    return [...filteredUsers].sort((a, b) => {
+      const valueA = a[sortKey];
+      const valueB = b[sortKey];
+
+      if (valueA == null) return sortDirection === 'asc' ? 1 : -1;
+      if (valueB == null) return sortDirection === 'asc' ? -1 : 1;
+
+      if (typeof valueA === 'string' && typeof valueB === 'string') {
+        return sortDirection === 'asc'
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+      }
+
+      if (typeof valueA === 'number' && typeof valueB === 'number') {
+        return sortDirection === 'asc'
+          ? valueA - valueB
+          : valueB - valueA;
+      }
+
+      if (valueA instanceof Date && valueB instanceof Date) {
+        return sortDirection === 'asc'
+          ? valueA.getTime() - valueB.getTime()
+          : valueB.getTime() - valueA.getTime();
+      }
+
+      return 0;
+    });
+  }, [filteredUsers, sortKey, sortDirection]);
+
+  // Pagination logic
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const paginatedUsers = sortedUsers.slice(indexOfFirstUser, indexOfLastUser);
+
   useEffect(() => {
-    async function fetchData() {
+    const fetchUsers = async () => {
       try {
         setIsLoading(true);
         const fetchedUsers = await getAllUsers();
@@ -105,9 +188,18 @@ export function UserManagement() {
       } finally {
         setIsLoading(false);
       }
-    }
-    fetchData();
+    };
+
+    fetchUsers();
   }, []);
+
+  if (isLoading) {
+    return <UserManagementSkeleton />;
+  }
+
+  if (users.length === 0) {
+    return <UserManagementEmptyState />;
+  }
 
   const toggleSearchColumn = (column: SearchColumn) => {
     setSearchColumns(prev =>
@@ -116,74 +208,6 @@ export function UserManagement() {
         : [...prev, column]
     );
   };
-
-  const filteredUsers = useMemo(() => {
-    return users.filter(user => {
-      // If no search columns are selected, return all users
-      if (searchColumns.length === 0) return true;
-
-      // Check if the search term matches any of the selected columns
-      return searchColumns.some(column => {
-        const value = user[column];
-
-        // Handle null or undefined values
-        if (value == null) return false;
-
-        // Convert to string and check if it includes the search term
-        return value.toString().toLowerCase().includes(searchTerm.toLowerCase());
-      });
-    });
-  }, [users, searchTerm, searchColumns]);
-
-  const sortedUsers = useMemo(() => {
-    // If no sorting key is selected, return users in original order
-    if (!sortKey) return filteredUsers;
-
-    return [...filteredUsers].sort((a, b) => {
-      const valueA = a[sortKey];
-      const valueB = b[sortKey];
-
-      // Handle potential null or undefined values
-      if (valueA == null) return sortDirection === 'asc' ? 1 : -1;
-      if (valueB == null) return sortDirection === 'asc' ? -1 : 1;
-
-      // Special handling for different types
-      if (sortKey === 'lastLogin') {
-        const dateA = valueA as Date;
-        const dateB = valueB as Date;
-        return sortDirection === 'asc'
-          ? dateA.getTime() - dateB.getTime()
-          : dateB.getTime() - dateA.getTime();
-      }
-
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return sortDirection === 'asc'
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
-      }
-
-      if (typeof valueA === 'boolean' && typeof valueB === 'boolean') {
-        return sortDirection === 'asc'
-          ? (valueA === valueB ? 0 : valueA ? 1 : -1)
-          : (valueA === valueB ? 0 : valueA ? -1 : 1);
-      }
-
-      if (typeof valueA === 'number' && typeof valueB === 'number') {
-        return sortDirection === 'asc'
-          ? valueA - valueB
-          : valueB - valueA;
-      }
-
-      return 0;
-    });
-  }, [filteredUsers, sortKey, sortDirection]);
-
-  const paginatedUsers = useMemo(() => {
-    const startIndex = (currentPage - 1) * usersPerPage;
-    return sortedUsers.slice(startIndex, startIndex + usersPerPage);
-  }, [sortedUsers, currentPage, usersPerPage]);
-
-  const totalPages = Math.ceil(sortedUsers.length / usersPerPage);
 
   const handleSort = (key: SortKey) => {
     // If sorting by the same column, toggle direction or reset
@@ -247,14 +271,6 @@ export function UserManagement() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-green-500" />
-      </div>
-    );
-  }
-
   return (
     <div>
       <div className="flex justify-between mb-4 space-x-4">
@@ -297,12 +313,12 @@ export function UserManagement() {
             Previous
           </Button>
           <span className="self-center">
-            Page {currentPage} of {totalPages}
+            Page {currentPage} of {Math.ceil(sortedUsers.length / usersPerPage)}
           </span>
           <Button
             variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(sortedUsers.length / usersPerPage)))}
+            disabled={currentPage === Math.ceil(sortedUsers.length / usersPerPage)}
           >
             Next
           </Button>

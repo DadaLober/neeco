@@ -22,6 +22,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+// Server action imports
+import { updateUserProfile } from '@/actions/profileActions';
+
 interface ProfileDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -63,11 +66,27 @@ export function ProfileDialog({ isOpen, onOpenChange, session }: ProfileDialogPr
 
   const handleSave = async () => {
     try {
-      // Remove update method call
-      await {
-        name: name,
-        image: avatarPreview || undefined
-      };
+      const formData = new FormData();
+      
+      // Add name to form data if changed
+      if (name !== session?.user?.name) {
+        formData.append('name', name);
+      }
+      
+      // Add avatar to form data if a new image is selected
+      if (avatarPreview) {
+        const response = await fetch(avatarPreview);
+        const blob = await response.blob();
+        formData.append('avatar', blob, 'avatar.jpg');
+      }
+      
+      // Call server action to update profile
+      const result = await updateUserProfile(formData);
+      
+      if (result.error) {
+        console.error('Failed to update profile', result.error);
+        return;
+      }
       
       // Close the dialog
       onOpenChange(false);
