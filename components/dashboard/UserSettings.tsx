@@ -1,8 +1,16 @@
 'use client';
 
+// React core imports
 import { useState } from 'react';
+
+// Authentication and Theme imports
 import { useSession } from 'next-auth/react';
 import { useTheme } from 'next-themes';
+
+// Icons
+import { Moon, Sun } from 'lucide-react';
+
+// UI Component imports
 import {
   Dialog,
   DialogContent,
@@ -11,7 +19,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { Moon, Sun } from 'lucide-react';
 
 export function UserSettings({
   isOpen, 

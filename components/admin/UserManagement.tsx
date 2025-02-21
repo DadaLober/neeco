@@ -1,6 +1,9 @@
 'use client'
 
+// React core imports
 import { useState, useEffect, useMemo } from 'react';
+
+// Admin and Role Action imports
 import {
   getAllUsers,
   updateUserRole,
@@ -8,6 +11,8 @@ import {
   deleteUser
 } from '@/actions/adminActions';
 import { getUserRoles } from '@/actions/roleActions';
+
+// UI Component imports
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -34,9 +39,13 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+
+// Icons
 import { Loader2, ArrowUpDown, Search, Filter } from 'lucide-react';
+
+// Utility and Notification imports
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 
 type User = {

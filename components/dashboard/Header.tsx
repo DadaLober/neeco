@@ -1,11 +1,23 @@
 "use client";
 
+// React and Next.js core imports
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+
+// Authentication and Session imports
+import { signOut } from 'next-auth/react';
+import { Session } from 'next-auth';
+
+// Icons
 import {
   Bell,
   Settings,
   LogOut,
   User,
 } from 'lucide-react';
+
+// UI Component imports
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,19 +29,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Image from 'next/image';
-import { signOut } from 'next-auth/react';
-import Link from 'next/link';
+
+// Custom hooks and components
 import { UserSettings } from './UserSettings';
 import { ProfileDialog } from './ProfileDialog';
-import { Session } from 'next-auth';
-import { useState } from 'react';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 
 type HeaderProps = {
   session: Session | null;
 };
 
 export function Header({ session }: HeaderProps) {
+  const breadcrumbs = useBreadcrumbs();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -83,9 +94,32 @@ export function Header({ session }: HeaderProps) {
             </div>
           </Link>
           <div className="hidden xl:flex h-6 w-px bg-gray-200 dark:bg-white/20 mx-2" />
-          <h2 className="hidden xl:flex text-lg font-semibold text-[#008033] dark:text-white">
-            Dashboard
-          </h2>
+          <nav className="hidden xl:block" aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-1 text-sm">
+              {breadcrumbs.map((item, index) => (
+                <li key={item.href} className="flex items-center">
+                  {item.type === 'link' ? (
+                    <Link 
+                      href={item.href} 
+                      className="text-gray-500 hover:text-[#008033] dark:text-gray-300 dark:hover:text-white transition-colors duration-200 flex items-center"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <span 
+                      className="text-[#008033] font-semibold dark:text-white"
+                      aria-current="page"
+                    >
+                      {item.label}
+                    </span>
+                  )}
+                  {index < breadcrumbs.length - 1 && (
+                    <span className="mx-2 text-gray-400 dark:text-gray-600">/</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
         </div>
 
         <div className="flex items-center gap-4">
@@ -161,6 +195,7 @@ export function Header({ session }: HeaderProps) {
             <ProfileDialog
               isOpen={isProfileOpen}
               onOpenChange={handleProfileDialogChange}
+              session={session}
             />
           )}
 

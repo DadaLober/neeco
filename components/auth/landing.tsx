@@ -1,7 +1,10 @@
 'use client'
 
+// React core imports
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import { shapes } from '@/lib/shapes'
+
+// Utility imports
+import { shapes } from '@/lib/shapes';
 
 const colors = ['#0D3959', '#FF871F', '#E94D35', '#4E6A51'];
 
@@ -137,4 +140,3 @@ const RandomShapesGrid: React.FC = () => {
 }
 
 export default RandomShapesGrid
-

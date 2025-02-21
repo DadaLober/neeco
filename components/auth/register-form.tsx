@@ -1,13 +1,22 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { PasswordInput } from "@/components/ui/password-input"
+// React core imports
+import { useState } from "react"
+
+// Form handling imports
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+
+// Authentication imports
 import { register } from "@/actions/authActions"
 import type { RegisterInput } from "@/actions/authActions"
-import { useState } from "react"
+
+// Validation imports
+import { registerSchema } from "@/schemas"
+
+// UI Component imports
+import { Button } from "@/components/ui/button"
+import { PasswordInput } from "@/components/ui/password-input"
 import {
     Form,
     FormControl,
@@ -16,8 +25,10 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import { registerSchema } from "@/schemas"
 import { Input } from "../ui/input"
+
+// Utility imports
+import { cn } from "@/lib/utils";
 
 function PasswordStrengthIndicator({ password }: { password: string }) {
     const requirements = [

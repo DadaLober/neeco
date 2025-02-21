@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from "react"
+// React core imports
+import { useEffect, useState } from "react";
 
 const agmaImages = ["/agma.jpg", "/coop.jpg", "/fire.jpg", "/sustain.jpg", "/women.jpg"]
 

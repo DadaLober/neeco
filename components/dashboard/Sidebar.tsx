@@ -1,6 +1,13 @@
 'use client';
 
-import { cn } from "@/lib/utils";
+// React core imports
+import { useState, useEffect } from "react";
+
+// Next.js imports
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+// Icons
 import {
   LayoutDashboard,
   Users,
@@ -13,9 +20,8 @@ import {
   LogOut,
   HelpCircle,
 } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+
+// UI Component imports
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -24,6 +30,9 @@ import {
   SheetTitle,
   SheetTrigger
 } from "@/components/ui/sheet";
+
+// Utility imports
+import { cn } from "@/lib/utils";
 
 const sidebarLinks = [
   {

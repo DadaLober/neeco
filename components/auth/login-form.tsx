@@ -1,14 +1,23 @@
 "use client"
 
-import { loginSchema } from "@/schemas"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { PasswordInput } from "@/components/ui/password-input"
+// React core imports
+import { useState } from "react"
+import type { ControllerRenderProps, FieldValues } from "react-hook-form"
+
+// Form handling imports
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+
+// Authentication imports
 import { login } from "@/actions/authActions"
 import type { LoginInput } from "@/actions/authActions"
-import { useState } from "react"
+
+// Validation imports
+import { loginSchema } from "@/schemas"
+
+// UI Component imports
+import { Button } from "@/components/ui/button"
+import { PasswordInput } from "@/components/ui/password-input"
 import {
     Form,
     FormControl,
@@ -17,8 +26,10 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import type { ControllerRenderProps, FieldValues } from "react-hook-form"
 import { Input } from "../ui/input"
+
+// Utility imports
+import { cn } from "@/lib/utils";
 
 const DEFAULT_VALUES: LoginInput = {
     email: "",
