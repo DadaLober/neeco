@@ -1,11 +1,13 @@
 'use client';
 
 // React core imports
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 // Authentication and Theme imports
-import { useSession } from 'next-auth/react';
+import { setup2FA, verify2FA, disable2FA } from "@/actions/twoFactorAuth";
 import { useTheme } from 'next-themes';
+import { Session } from 'next-auth';
+import Image from "next/image";
 
 // Icons
 import { Moon, Sun } from 'lucide-react';
@@ -20,30 +22,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 
-import { setup2FA, verify2FA, disable2FA } from "@/actions/twoFactorAuth";
-import Image from "next/image";
-
-export function UserSettings({
-  isOpen,
-  onOpenChange
-}: {
+interface UserSettingsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-}) {
-  const { data: session } = useSession();
+  session: Session | null;
+}
+
+export function UserSettingsDialog({ isOpen, onOpenChange, session }: UserSettingsDialogProps) {
   const { theme, setTheme } = useTheme();
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false);
-  const [twoFactorAuthEnabled, setTwoFactorAuthEnabled] = useState(false);
+  const [twoFactorAuthEnabled, setTwoFactorAuthEnabled] = useState(session?.user?.is2FAEnabled || false);
   const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
   const [showQRDialog, setShowQRDialog] = useState(false);
-
-  useEffect(() => {
-    if (session?.user?.is2FAEnabled !== undefined) {
-      setTwoFactorAuthEnabled(session.user.is2FAEnabled);
-    }
-  }, [session]);
 
   async function handle2FAToggle(enabled: boolean) {
     try {
@@ -86,7 +78,6 @@ export function UserSettings({
       setLoading(false);
     }
   }
-
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -163,6 +154,8 @@ export function UserSettings({
                   disabled={loading}
                 />
               </div>
+
+              {/* Two-Factor Authentication QR*/}
               {qrCode && (
                 <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
                   <DialogContent className="sm:max-w-[400px]">

@@ -58,8 +58,9 @@ export const {
             id: user.id,
             email: user.email,
             name: user.name,
-            role: user.role || 'USER',
+            role: user.role,
             image: user.image,
+            is2FAEnabled: user.is2FAEnabled,
           }
         } catch (error) {
           console.error("Auth error:", error)
@@ -73,12 +74,14 @@ export const {
       if (token.sub) {
         session.user.id = token.sub
       }
-      session.user.role = token.role as string || 'USER'
+      session.user.role = token.role as string
+      session.user.is2FAEnabled = token.is2FAEnabled as boolean
       return session
     },
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role
+        token.is2FAEnabled = user.is2FAEnabled
       }
       return token
     }
