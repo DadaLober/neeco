@@ -1,7 +1,7 @@
 'use client';
 
 // React core imports
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // Authentication and Theme imports
 import { useSession } from 'next-auth/react';
@@ -20,8 +20,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 
+import { setup2FA, verify2FA, disable2FA } from "@/actions/twoFactorAuth";
+import Image from "next/image";
+
 export function UserSettings({
-  isOpen, 
+  isOpen,
   onOpenChange
 }: {
   isOpen: boolean;
@@ -30,7 +33,60 @@ export function UserSettings({
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false);
-  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
+  const [twoFactorAuthEnabled, setTwoFactorAuthEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [otp, setOtp] = useState("");
+  const [showQRDialog, setShowQRDialog] = useState(false);
+
+  useEffect(() => {
+    if (session?.user?.is2FAEnabled !== undefined) {
+      setTwoFactorAuthEnabled(session.user.is2FAEnabled);
+    }
+  }, [session]);
+
+  async function handle2FAToggle(enabled: boolean) {
+    try {
+      setLoading(true);
+      if (enabled) {
+        const response = await setup2FA();
+        if (!response?.qrCodeDataURL) {
+          throw new Error("Failed to generate QR code");
+        }
+        setQrCode(response.qrCodeDataURL);
+        setShowQRDialog(true);
+      } else {
+        await disable2FA();
+        setQrCode(null);
+        setTwoFactorAuthEnabled(false);
+        setShowQRDialog(false);
+      }
+    } catch (error) {
+      console.error('Failed to toggle 2FA:', error);
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerifyOTP() {
+    try {
+      setLoading(true);
+      const response = await verify2FA(otp);
+      if (response?.success) {
+        setTwoFactorAuthEnabled(true);
+        setQrCode(null);
+      } else {
+        alert("Invalid OTP. Try again.");
+      }
+    } catch (error) {
+      console.error("Failed to verify OTP:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -43,7 +99,7 @@ export function UserSettings({
           <div>
             <h3 className="text-lg font-semibold mb-3">Appearance</h3>
             <div className="grid grid-cols-2 gap-4">
-              <Button 
+              <Button
                 variant={theme === 'light' ? 'green' : 'greenOutline'}
                 onClick={() => setTheme('light')}
                 className="flex items-center justify-center gap-2"
@@ -51,7 +107,7 @@ export function UserSettings({
                 <Sun className="h-4 w-4" />
                 Light Mode
               </Button>
-              <Button 
+              <Button
                 variant={theme === 'dark' ? 'green' : 'greenOutline'}
                 onClick={() => setTheme('dark')}
                 className="flex items-center justify-center gap-2"
@@ -59,29 +115,6 @@ export function UserSettings({
                 <Moon className="h-4 w-4" />
                 Dark Mode
               </Button>
-            </div>
-          </div>
-
-          {/* Notification Settings */}
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Notifications</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label htmlFor="email-notifications" className="text-sm">Email Notifications</label>
-                <Switch 
-                  id="email-notifications"
-                  checked={emailNotificationsEnabled}
-                  onCheckedChange={setEmailNotificationsEnabled}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <label htmlFor="push-notifications" className="text-sm">Push Notifications</label>
-                <Switch 
-                  id="push-notifications"
-                  checked={pushNotificationsEnabled}
-                  onCheckedChange={setPushNotificationsEnabled}
-                />
-              </div>
             </div>
           </div>
 
@@ -112,13 +145,59 @@ export function UserSettings({
                 </Button>
               </div>
               <div className="flex items-center justify-between">
-                <label htmlFor="two-factor-auth" className="text-sm">Two-Factor Authentication</label>
-                <Switch 
-                  id="two-factor-auth"
-                  checked={false}
-                  onCheckedChange={() => {/* TODO: Implement 2FA toggle logic */}}
+              </div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="email-notifications" className="text-sm">Email Notifications</label>
+                <Switch
+                  id="email-notifications"
+                  checked={emailNotificationsEnabled}
+                  onCheckedChange={setEmailNotificationsEnabled}
                 />
               </div>
+              <div className="flex items-center justify-between">
+                <label htmlFor="two-factor-auth" className="text-sm">Two-Factor Authentication</label>
+                <Switch
+                  id="two-factor-auth"
+                  checked={twoFactorAuthEnabled}
+                  onCheckedChange={(checked) => handle2FAToggle(checked)}
+                  disabled={loading}
+                />
+              </div>
+              {qrCode && (
+                <Dialog open={showQRDialog} onOpenChange={setShowQRDialog}>
+                  <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                      <DialogTitle className='text-center'>Two-Factor Authentication</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center">
+                      <p className="text-sm text-center mb-4">Scan this QR code with Google Authenticator:</p>
+                      <div className="relative w-[200px] h-[200px]">
+                        <Image
+                          src={qrCode}
+                          alt="2FA QR Code"
+                          width={200}
+                          height={200}
+                          className="object-contain"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="border p-2 mt-4 w-full max-w-[200px] rounded-md"
+                        placeholder="Enter OTP"
+                      />
+                      <Button
+                        onClick={handleVerifyOTP}
+                        className="mt-4 w-full max-w-[200px]"
+                        variant="default"
+                      >
+                        Verify
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
 
@@ -133,9 +212,9 @@ export function UserSettings({
                     Permanently delete your account and all associated data
                   </p>
                 </div>
-                <Button 
-                  variant="green" 
-                  size="sm" 
+                <Button
+                  variant="green"
+                  size="sm"
                   className="bg-[#008033] text-white hover:bg-[#008033]/90"
                 >
                   Delete Account

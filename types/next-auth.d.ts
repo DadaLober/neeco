@@ -12,6 +12,7 @@ declare module "next-auth" {
       name?: string | null
       role?: string
       image?: string
+      is2FAEnabled?: boolean
     }
   }
 }
