@@ -39,21 +39,18 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
             }
         });
 
-        // First authenticate the user but don't redirect yet
-        await signIn("credentials", {
+        const signInResult = await signIn("credentials", {
             email: values.email,
             password: values.password,
             redirect: false
         });
 
-        // Now check if 2FA is required
-        const session = await auth();
-        if (!session?.user) {
-            return { error: "Authentication failed" };
+        if (signInResult?.error) {
+            return { error: "Invalid credentials" };
         }
 
-        // Check if the user has 2FA enabled
-        if (session.user.is2FAEnabled) {
+        // If 2FA is enabled for the user
+        if (user.is2FAEnabled) {
             return {
                 success: true,
                 requires2FA: true,
@@ -61,7 +58,6 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
             };
         }
 
-        // If no 2FA is required, return success with the redirect URL
         return {
             success: true,
             requires2FA: false,
