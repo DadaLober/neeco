@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma"
 import { hash } from "bcrypt"
 import { z } from "zod"
 import { auth } from "@/auth"
+import { cookies } from "next/headers"
 
 export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
@@ -51,6 +52,14 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
 
         // If 2FA is enabled for the user
         if (user.is2FAEnabled) {
+
+            (await cookies()).set("2fa_enabled", "true", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+                path: "/",
+                maxAge: 60 * 60 * 24 * 7 // 7 days
+            });
             return {
                 success: true,
                 requires2FA: true,
@@ -92,6 +101,8 @@ export async function complete2FALogin(callbackUrl?: string) {
     if (!session?.user) {
         return { error: "Authentication required" };
     }
+    9
+    await (await cookies()).delete("2fa_enabled");
 
     const redirectUrl = callbackUrl || "/dashboard";
     return { success: true, url: redirectUrl };
