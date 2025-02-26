@@ -7,16 +7,19 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { hash } from "bcrypt"
 import { z } from "zod"
+import { auth } from "@/auth"
 
 export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
 
-export async function login(values: LoginInput) {
+export async function login(values: LoginInput, callbackUrl?: string | null) {
     const result = loginSchema.safeParse(values)
 
     if (!result.success) {
         return { error: "Invalid input" }
     }
+
+    const redirectUrl = callbackUrl || "/dashboard"
 
     try {
         const user = await prisma.user.findUnique({
@@ -36,12 +39,34 @@ export async function login(values: LoginInput) {
             }
         });
 
+        // First authenticate the user but don't redirect yet
         await signIn("credentials", {
             email: values.email,
             password: values.password,
-            redirect: true,
-            redirectTo: "/dashboard"
-        })
+            redirect: false
+        });
+
+        // Now check if 2FA is required
+        const session = await auth();
+        if (!session?.user) {
+            return { error: "Authentication failed" };
+        }
+
+        // Check if the user has 2FA enabled
+        if (session.user.is2FAEnabled) {
+            return {
+                success: true,
+                requires2FA: true,
+                callbackUrl: redirectUrl
+            };
+        }
+
+        // If no 2FA is required, return success with the redirect URL
+        return {
+            success: true,
+            requires2FA: false,
+            url: redirectUrl
+        };
 
     } catch (error) {
         if (error instanceof AuthError) {
@@ -62,6 +87,18 @@ export async function login(values: LoginInput) {
         }
         throw error
     }
+}
+
+// New function to handle 2FA completion
+export async function complete2FALogin(callbackUrl?: string) {
+    const session = await auth();
+
+    if (!session?.user) {
+        return { error: "Authentication required" };
+    }
+
+    const redirectUrl = callbackUrl || "/dashboard";
+    return { success: true, url: redirectUrl };
 }
 
 export async function register(values: RegisterInput) {
