@@ -40,9 +40,15 @@ import {
     DialogFooter
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 // Icons
-import { ArrowUpDown, Search } from 'lucide-react';
+import { ArrowUpDown, Search, MoreHorizontal, UserCheck, Pencil, Trash2 } from 'lucide-react';
 
 // Utility and Notification imports
 import { cn } from '@/lib/utils';
@@ -76,6 +82,14 @@ const COLUMN_NAMES: Record<SearchColumn, string> = {
     oic: 'OIC',
     date: 'Date',
     time: 'Time'
+};
+
+// Status color mapping
+const STATUS_COLORS = {
+    'Pending': { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200' },
+    'Processing': { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200' },
+    'Completed': { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
+    'Rejected': { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200' }
 };
 
 const ItemManagementEmptyState = () => {
@@ -399,13 +413,47 @@ export default function DashboardTable() {
                     {paginatedItems.map((item) => (
                         <TableRow key={item.id}>
                             <TableCell>{item.referenceNo}</TableCell>
-                            <TableCell>{item.itemType}</TableCell>
+                            <TableCell>
+                                <Select
+                                    value={item.itemType}
+                                    onValueChange={(newItemType) => {
+                                        // Update item type locally until server-side function is available
+                                        setItems(items.map(i =>
+                                            i.id === item.id
+                                                ? { ...i, itemType: newItemType }
+                                                : i
+                                        ));
+                                        toast.info("Item type changes are displayed locally. Server update functionality is not implemented yet.");
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select item type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {itemTypes.length > 0 ? (
+                                            itemTypes.map((type) => (
+                                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                                            ))
+                                        ) : (
+                                            // Default options if no item types are fetched
+                                            ['Request Voucher', 'Purchase Order'].map((type) => (
+                                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                                            ))
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </TableCell>
                             <TableCell>
                                 <Select
                                     value={item.status}
                                     onValueChange={(newStatus) => handleStatusChange(item.id, newStatus)}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className={cn(
+                                        "rounded-md px-2 py-1 text-xs font-medium border",
+                                        STATUS_COLORS[item.status as keyof typeof STATUS_COLORS]?.bg || "bg-gray-100",
+                                        STATUS_COLORS[item.status as keyof typeof STATUS_COLORS]?.text || "text-gray-800",
+                                        STATUS_COLORS[item.status as keyof typeof STATUS_COLORS]?.border || "border-gray-200"
+                                    )}>
                                         <SelectValue placeholder="Select status" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -423,36 +471,42 @@ export default function DashboardTable() {
                             </TableCell>
                             <TableCell>{format(item.date, 'yyyy-MM-dd')}</TableCell>
                             <TableCell>
-                                <div className="flex space-x-2">
-                                    <Button
-                                        variant={item.oic ? 'destructive' : 'default'}
-                                        size="sm"
-                                        onClick={() => handleToggleOIC(item.id)}
-                                    >
-                                        {item.oic ? 'Remove OIC' : 'Assign OIC'}
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                            setSelectedItem(item);
-                                            setNewEmpId(item.empId);
-                                            setIsEditEmpIdDialogOpen(true);
-                                        }}
-                                    >
-                                        Edit Emp ID
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => {
-                                            setSelectedItem(item);
-                                            setIsDeleteDialogOpen(true);
-                                        }}
-                                    >
-                                        Delete
-                                    </Button>
-                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            onClick={() => handleToggleOIC(item.id)}
+                                            className={item.oic ? "text-red-600" : "text-green-600"}
+                                        >
+                                            <UserCheck className="mr-2 h-4 w-4" />
+                                            {item.oic ? 'Remove OIC' : 'Assign OIC'}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setSelectedItem(item);
+                                                setNewEmpId(item.empId);
+                                                setIsEditEmpIdDialogOpen(true);
+                                            }}
+                                        >
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Edit Emp ID
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setSelectedItem(item);
+                                                setIsDeleteDialogOpen(true);
+                                            }}
+                                            className="text-red-600"
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </TableCell>
                         </TableRow>
                     ))}
