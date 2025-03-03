@@ -145,7 +145,7 @@ export function Header({ session }: HeaderProps) {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={session?.user?.image}
+                      src={session?.user?.image || ""}
                       alt={session?.user?.name || "User"}
                     />
                     <AvatarFallback className="bg-[#008033]/10 text-[#008033] dark:bg-white/10 dark:text-white">

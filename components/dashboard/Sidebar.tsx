@@ -44,27 +44,7 @@ const sidebarLinks = [
     title: "Users",
     href: "/dashboard/users",
     icon: Users,
-  },
-  {
-    title: "Reports",
-    href: "/dashboard/reports",
-    icon: BarChart3,
-  },
-  {
-    title: "Documents",
-    href: "/dashboard/documents",
-    icon: FolderOpen,
-  },
-  {
-    title: "Messages",
-    href: "/dashboard/messages",
-    icon: Mail,
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
+  }
 ];
 
 interface SidebarContentProps {

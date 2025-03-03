@@ -9,7 +9,7 @@ import {
   TableRow
 } from '@/components/ui/table';
 
-export function UserManagementSkeleton() {
+export function TableSkeleton() {
   return (
     <div>
       <div className="flex justify-between mb-4 space-x-4">

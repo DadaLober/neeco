@@ -33,6 +33,17 @@ model User {
   // Account   Account[]
 }
 
+model Item {
+  id          String   @id @default(cuid())
+  referenceNo String   @unique
+  itemType    String
+  status      String
+  empId       String
+  oic         Boolean  @default(false)
+  date        DateTime
+  time        DateTime
+}
+
 // model Account {
 //   id                String  @id @default(cuid())
 //   userId            String

@@ -39,17 +39,15 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { TableSkeleton } from '../dashboard/TableSkeleton';
 
 // Icons
-import { Loader2, ArrowUpDown, Search, Filter } from 'lucide-react';
+import { ArrowUpDown, Search } from 'lucide-react';
 
 // Utility and Notification imports
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
-
-// Import the new UserManagementSkeleton
-import { UserManagementSkeleton } from './UserManagementSkeleton';
 
 type User = {
   id: string;
@@ -78,23 +76,23 @@ const COLUMN_NAMES: Record<SearchColumn, string> = {
 const UserManagementEmptyState = () => {
   return (
     <div className="flex flex-col items-center justify-center p-8 bg-gray-50 rounded-lg">
-      <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        className="h-16 w-16 text-gray-400 mb-4" 
-        fill="none" 
-        viewBox="0 0 24 24" 
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-16 w-16 text-gray-400 mb-4"
+        fill="none"
+        viewBox="0 0 24 24"
         stroke="currentColor"
       >
-        <path 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          strokeWidth={2} 
-          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" 
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
         />
       </svg>
       <h2 className="text-xl font-semibold text-gray-600 mb-2">No Users Found</h2>
       <p className="text-gray-500 text-center mb-4">
-        There are currently no users in the system. 
+        There are currently no users in the system.
         {/* You can add an action button here if needed */}
       </p>
     </div>
@@ -194,7 +192,7 @@ export function UserManagement() {
   }, []);
 
   if (isLoading) {
-    return <UserManagementSkeleton />;
+    return <TableSkeleton />;
   }
 
   if (users.length === 0) {
