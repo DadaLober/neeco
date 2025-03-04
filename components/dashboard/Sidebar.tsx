@@ -11,13 +11,8 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
-  Settings,
-  BarChart3,
-  FolderOpen,
-  Mail,
   ChevronLeft,
   Menu,
-  LogOut,
   HelpCircle,
 } from "lucide-react";
 
