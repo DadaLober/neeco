@@ -1,4 +1,3 @@
-// app/two-factor-auth/page.tsx
 import { TwoFactorVerification } from "@/components/auth/two-factor"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
@@ -6,12 +5,10 @@ import { redirect } from "next/navigation"
 export default async function TwoFactorAuthPage() {
     const session = await auth()
 
-    // If user is not logged in, redirect to login
     if (!session?.user) {
         redirect("/login")
     }
 
-    // If user doesn't have 2FA enabled, redirect to dashboard
     if (!session.user.is2FAEnabled) {
         redirect("/dashboard")
     }

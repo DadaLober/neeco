@@ -95,8 +95,12 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
 
 export async function complete2FALogin(callbackUrl?: string) {
     await requireAuth();
-    await (await cookies()).delete("2fa_enabled");
-
+    try {
+        await (await cookies()).delete("2fa_enabled");
+    } catch (error) {
+        console.error("Error deleting 2FA cookie:", error);
+        return { error: "Something went wrong" };
+    }
     const redirectUrl = callbackUrl || "/dashboard";
     return { success: true, url: redirectUrl };
 }

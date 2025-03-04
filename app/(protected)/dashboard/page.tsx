@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import DashboardTable from "@/components/dashboard/DashboardTable";
 
 export default async function DashboardPage() {
-
   const session = await auth();
 
   if (!session) {

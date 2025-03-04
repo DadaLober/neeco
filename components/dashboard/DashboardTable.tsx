@@ -282,6 +282,7 @@ export default function DashboardTable() {
     const handleToggleOIC = async (itemId: string) => {
         try {
             const updatedItem = await toggleItemOIC(itemId);
+            if (!updatedItem) return;
             // Convert date strings to Date objects
             updatedItem.date = new Date(updatedItem.date);
             updatedItem.time = new Date(updatedItem.time);
