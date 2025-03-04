@@ -1,95 +1,117 @@
 'use server'
 
-import { auth } from '@/auth';
-import { isAdmin } from './roleActions';
 import { prisma } from '@/lib/prisma';
+import { requireAuth } from './roleActions';
 import { revalidatePath } from 'next/cache';
 
 export async function getAllItems() {
+    await requireAuth();
 
-    return prisma.item.findMany({
-        select: {
-            id: true,
-            referenceNo: true,
-            itemType: true,
-            status: true,
-            empId: true,
-            oic: true,
-            date: true,
-            time: true,
-        },
-        orderBy: { date: 'desc' }
-    });
+    try {
+        return prisma.item.findMany({
+            select: {
+                id: true,
+                referenceNo: true,
+                itemType: true,
+                status: true,
+                empId: true,
+                oic: true,
+                date: true,
+                time: true,
+            },
+            orderBy: { date: 'desc' }
+        });
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error fetching items');
+    }
 }
 
 export async function updateItemStatus(itemId: string, newStatus: string) {
+    await requireAuth();
 
-    const updatedItem = await prisma.item.update({
-        where: { id: itemId },
-        data: { status: newStatus }
-    });
+    try {
+        const updatedItem = await prisma.item.update({
+            where: { id: itemId },
+            data: { status: newStatus }
+        });
 
-    revalidatePath('/admin');
-    return updatedItem;
+        revalidatePath('/admin');
+        return updatedItem;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error updating item status');
+    }
 }
 
 export async function toggleItemOIC(itemId: string) {
+    await requireAuth();
 
-    const item = await prisma.item.findUnique({
-        where: { id: itemId }
-    });
+    try {
+        const item = await prisma.item.findUnique({
+            where: { id: itemId }
+        });
 
-    if (!item) {
-        throw new Error('Item not found');
+        if (!item) return null;
+
+        const updatedItem = await prisma.item.update({
+            where: { id: itemId },
+            data: { oic: !item.oic }
+        });
+
+        revalidatePath('/admin');
+        return updatedItem;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error toggling item OIC');
     }
-
-    const updatedItem = await prisma.item.update({
-        where: { id: itemId },
-        data: { oic: !item.oic }
-    });
-
-    revalidatePath('/admin');
-    return updatedItem;
 }
 
 export async function updateItemEmpId(itemId: string, newEmpId: string) {
-    const session = await auth();
-    const userRole = session?.user?.role;
+    await requireAuth();
 
-    if (!(await isAdmin(userRole))) {
-        throw new Error('Unauthorized: Admin access required');
+    try {
+        const updatedItem = await prisma.item.update({
+            where: { id: itemId },
+            data: { empId: newEmpId }
+        });
+
+        revalidatePath('/admin');
+        return updatedItem;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error updating item employee ID');
     }
-
-    const updatedItem = await prisma.item.update({
-        where: { id: itemId },
-        data: { empId: newEmpId }
-    });
-
-    revalidatePath('/admin');
-    return updatedItem;
 }
 
 export async function deleteItem(itemId: string) {
-    const session = await auth();
-    const userRole = session?.user?.role;
+    await requireAuth();
 
-    if (!(await isAdmin(userRole))) {
-        throw new Error('Unauthorized: Admin access required');
+    try {
+        const deletedItem = await prisma.item.delete({
+            where: { id: itemId }
+        });
+
+        revalidatePath('/admin');
+        return deletedItem;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error deleting item');
     }
-
-    const deletedItem = await prisma.item.delete({
-        where: { id: itemId }
-    });
-
-    revalidatePath('/admin');
-    return deletedItem;
 }
 
 export async function getItemTypes() {
-    const itemTypes = await prisma.item.findMany({
-        select: { itemType: true },
-        distinct: ['itemType']
-    });
+    await requireAuth();
 
-    return itemTypes.map((item) => item.itemType);
+    try {
+        const itemTypes = await prisma.item.findMany({
+            select: { itemType: true },
+            distinct: ['itemType']
+        });
+
+        return itemTypes.map((item) => item.itemType);
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error fetching item types');
+    }
 }

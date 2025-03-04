@@ -1,5 +1,7 @@
 'use server'
 
+import { auth } from "@/auth";
+
 //Get user roles
 export async function getUserRoles(): Promise<string[]> {
   return ['USER', 'ADMIN', 'MODERATOR'];
@@ -11,21 +13,7 @@ export async function isValidRole(role: string): Promise<boolean> {
   return roles.includes(role);
 }
 
-// Validate user role
-export async function validateUserRole(role: string): Promise<string> {
-  const roles = await getUserRoles();
-  if (!roles.includes(role)) {
-    throw new Error(`Invalid user role: ${role}. Allowed roles are: ${roles.join(', ')}`);
-  }
-  return role;
-}
-
-// Server action to get default role
-export async function getDefaultRole(): Promise<string> {
-  return 'USER';
-}
-
-// Check if a user has admin privileges
+// Validate user role and return the validated role
 export async function isAdmin(userRole?: string): Promise<boolean> {
   if (!userRole) return false;
   return userRole === 'ADMIN';
@@ -35,4 +23,27 @@ export async function isAdmin(userRole?: string): Promise<boolean> {
 export async function isAdminOrModerator(userRole?: string): Promise<boolean> {
   if (!userRole) return false;
   return ['ADMIN', 'MODERATOR'].includes(userRole);
+}
+
+// Check if a user has admin privileges
+export async function requireAdmin() {
+  const session = await auth();
+  const userRole = session?.user?.role;
+  if (!(await isAdmin(userRole))) {
+    throw new Error('Unauthorized: Admin access required');
+  }
+}
+
+// Check if a user has valid permissions
+export async function requireAuth() {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error('Unauthorized: Authentication required');
+  }
+
+  if (!await isValidRole(session.user.role)) {
+    throw new Error('Unauthorized: Insufficient permissions');
+  }
+
+  return session;
 }

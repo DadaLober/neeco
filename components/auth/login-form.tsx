@@ -3,7 +3,7 @@
 // React core imports
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import type { ControllerRenderProps, FieldValues } from "react-hook-form"
+import type { ControllerRenderProps } from "react-hook-form"
 
 // Form handling imports
 import { useForm } from "react-hook-form"

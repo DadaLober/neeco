@@ -29,6 +29,7 @@ import { Input } from "../ui/input"
 
 // Utility imports
 import { cn } from "@/lib/utils";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function PasswordStrengthIndicator({ password }: { password: string }) {
     const requirements = [
@@ -96,6 +97,9 @@ const DEFAULT_VALUES: RegisterInput = {
 
 export function RegisterForm() {
     const [error, setError] = useState<string>("")
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const callbackUrl = searchParams.get("callbackUrl")
 
     const form = useForm<RegisterInput>({
         resolver: zodResolver(registerSchema),
@@ -104,11 +108,15 @@ export function RegisterForm() {
 
     async function onSubmit(values: RegisterInput) {
         setError("")
-        const result = await register(values)
+        const result = await register(values, callbackUrl)
 
         if (result?.error) {
             setError(result.error)
             form.setError("root", { message: result.error })
+        }
+
+        if (result?.url) {
+            router.push(result.url)
         }
     }
 

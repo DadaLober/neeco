@@ -238,8 +238,8 @@ export function UserManagement() {
   const handleToggleActivation = async (userId: string) => {
     try {
       const updatedUser = await toggleUserActivation(userId);
-      setUsers(users.map(user => user.id === userId ? updatedUser : user));
-      toast.success(`User ${updatedUser.isActive ? 'activated' : 'deactivated'} successfully`);
+      setUsers(users.map(user => user.id === userId ? updatedUser! : user));
+      toast.success(`User ${updatedUser!.isActive ? 'activated' : 'deactivated'} successfully`);
     } catch (error) {
       toast.error('Failed to toggle user activation', { description: error instanceof Error ? error.message : 'Unknown error' });
     }

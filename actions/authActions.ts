@@ -2,13 +2,12 @@
 
 import { loginSchema, registerSchema } from "@/schemas"
 import { signIn } from "@/auth"
-import { AuthError } from "next-auth"
-import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { hash } from "bcrypt"
 import { z } from "zod"
-import { auth } from "@/auth"
 import { cookies } from "next/headers"
+import { AuthError } from "next-auth"
+import { requireAuth } from "./roleActions"
 
 export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
@@ -31,7 +30,6 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
             return { error: "Account is not active" };
         }
 
-        // Update last login and reset login attempts
         await prisma.user.update({
             where: { email: values.email },
             data: {
@@ -47,24 +45,27 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
         });
 
         if (signInResult?.error) {
-            return { error: "Invalid credentials" };
+            return { error: "Invalid email or password" };
         }
 
-        // If 2FA is enabled for the user
         if (user.is2FAEnabled) {
-
-            (await cookies()).set("2fa_enabled", "true", {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-                path: "/",
-                maxAge: 60 * 60 * 24 * 7 // 7 days
-            });
-            return {
-                success: true,
-                requires2FA: true,
-                callbackUrl: redirectUrl
-            };
+            try {
+                (await cookies()).set("2fa_enabled", "true", {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict",
+                    path: "/",
+                    maxAge: 60 * 15 // 15 minutes
+                });
+                return {
+                    success: true,
+                    requires2FA: true,
+                    callbackUrl: redirectUrl
+                };
+            } catch (error) {
+                console.error("Error setting 2FA cookie:", error);
+                return { error: "Something went wrong" };
+            }
         }
 
         return {
@@ -72,10 +73,8 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
             requires2FA: false,
             url: redirectUrl
         };
-
     } catch (error) {
         if (error instanceof AuthError) {
-            // Increment login attempts on failure
             await prisma.user.update({
                 where: { email: values.email },
                 data: {
@@ -85,7 +84,7 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
 
             switch (error.type) {
                 case "CredentialsSignin":
-                    return { error: "Invalid credentials" }
+                    return { error: "Invalid email or password" }
                 default:
                     return { error: "Something went wrong" }
             }
@@ -94,22 +93,17 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
     }
 }
 
-// New function to handle 2FA completion
 export async function complete2FALogin(callbackUrl?: string) {
-    const session = await auth();
-
-    if (!session?.user) {
-        return { error: "Authentication required" };
-    }
-    9
+    await requireAuth();
     await (await cookies()).delete("2fa_enabled");
 
     const redirectUrl = callbackUrl || "/dashboard";
     return { success: true, url: redirectUrl };
 }
 
-export async function register(values: RegisterInput) {
+export async function register(values: RegisterInput, callbackUrl?: string | null) {
     const result = registerSchema.safeParse(values)
+    const redirectUrl = callbackUrl || "/login"
 
     if (!result.success) {
         return { error: "Invalid input" }
@@ -133,7 +127,7 @@ export async function register(values: RegisterInput) {
                 password: hashedPassword,
             },
         })
-        redirect("/login")
+        return { success: true, message: "Registration successful", url: redirectUrl }
     } catch (error) {
         return { error: "Something went wrong" }
     }
