@@ -1,25 +1,26 @@
 "use server"
 
-import { loginSchema, registerSchema } from "@/schemas"
-import { signIn } from "@/auth"
-import { prisma } from "@/lib/prisma"
-import { hash } from "bcrypt"
-import { z } from "zod"
-import { cookies } from "next/headers"
-import { AuthError } from "next-auth"
-import { requireAuth } from "./roleActions"
+import { loginSchema, registerSchema, callbackUrlSchema } from "@/schemas";
+import { signIn } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { hash } from "bcrypt";
+import { z } from "zod";
+import { cookies } from "next/headers";
+import { AuthError } from "next-auth";
+import { requireAuth } from "./roleActions";
 
-export type LoginInput = z.infer<typeof loginSchema>
-export type RegisterInput = z.infer<typeof registerSchema>
+export type LoginInput = z.infer<typeof loginSchema>;
+export type RegisterInput = z.infer<typeof registerSchema>;
 
 export async function login(values: LoginInput, callbackUrl?: string | null) {
-    const result = loginSchema.safeParse(values)
+    const result = loginSchema.safeParse(values);
+    const parsedCallbackUrl = callbackUrlSchema.safeParse(callbackUrl);
 
     if (!result.success) {
-        return { error: "Invalid input" }
+        return { error: "Invalid input" };
     }
 
-    const redirectUrl = callbackUrl || "/dashboard"
+    const redirectUrl = parsedCallbackUrl.success ? parsedCallbackUrl.data : "/dashboard";
 
     try {
         const user = await prisma.user.findUnique({
@@ -84,45 +85,48 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
 
             switch (error.type) {
                 case "CredentialsSignin":
-                    return { error: "Invalid email or password" }
+                    return { error: "Invalid email or password" };
                 default:
-                    return { error: "Something went wrong" }
+                    return { error: "Something went wrong" };
             }
         }
-        throw error
+        throw error;
     }
 }
 
 export async function complete2FALogin(callbackUrl?: string) {
     await requireAuth();
+    const parsedCallbackUrl = callbackUrlSchema.safeParse(callbackUrl);
     try {
         await (await cookies()).delete("2fa_enabled");
     } catch (error) {
         console.error("Error deleting 2FA cookie:", error);
         return { error: "Something went wrong" };
     }
-    const redirectUrl = callbackUrl || "/dashboard";
+    const redirectUrl = parsedCallbackUrl.success ? parsedCallbackUrl.data : "/dashboard";
     return { success: true, url: redirectUrl };
 }
 
 export async function register(values: RegisterInput, callbackUrl?: string | null) {
-    const result = registerSchema.safeParse(values)
-    const redirectUrl = callbackUrl || "/login"
+    const result = registerSchema.safeParse(values);
+    const parsedCallbackUrl = callbackUrlSchema.safeParse(callbackUrl);
 
     if (!result.success) {
-        return { error: "Invalid input" }
+        return { error: "Invalid input" };
     }
+
+    const redirectUrl = parsedCallbackUrl.success ? parsedCallbackUrl.data : "/login";
 
     try {
         const existingUser = await prisma.user.findUnique({
             where: { email: values.email },
-        })
+        });
 
         if (existingUser) {
-            return { error: "Email already in use" }
+            return { error: "Email already in use" };
         }
 
-        const hashedPassword = await hash(values.password, 10)
+        const hashedPassword = await hash(values.password, 10);
 
         await prisma.user.create({
             data: {
@@ -130,9 +134,9 @@ export async function register(values: RegisterInput, callbackUrl?: string | nul
                 email: values.email,
                 password: hashedPassword,
             },
-        })
-        return { success: true, message: "Registration successful", url: redirectUrl }
+        });
+        return { success: true, message: "Registration successful", url: redirectUrl };
     } catch (error) {
-        return { error: "Something went wrong" }
+        return { error: "Something went wrong" };
     }
 }

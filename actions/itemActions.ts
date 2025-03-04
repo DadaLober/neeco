@@ -1,8 +1,13 @@
-'use server'
+"use server";
 
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from './roleActions';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { IdSchema } from '@/schemas';
+
+const statusSchema = z.string().min(1).max(50);
+const empIdSchema = z.string().min(1).max(50);
 
 export async function getAllItems() {
     await requireAuth();
@@ -30,6 +35,12 @@ export async function getAllItems() {
 export async function updateItemStatus(itemId: string, newStatus: string) {
     await requireAuth();
 
+    const validItemId = IdSchema.safeParse(itemId);
+    const validStatus = statusSchema.safeParse(newStatus);
+    if (!validItemId.success || !validStatus.success) {
+        throw new Error('Invalid input');
+    }
+
     try {
         const updatedItem = await prisma.item.update({
             where: { id: itemId },
@@ -46,6 +57,11 @@ export async function updateItemStatus(itemId: string, newStatus: string) {
 
 export async function toggleItemOIC(itemId: string) {
     await requireAuth();
+
+    const validItemId = IdSchema.safeParse(itemId);
+    if (!validItemId.success) {
+        throw new Error('Invalid item ID');
+    }
 
     try {
         const item = await prisma.item.findUnique({
@@ -70,6 +86,12 @@ export async function toggleItemOIC(itemId: string) {
 export async function updateItemEmpId(itemId: string, newEmpId: string) {
     await requireAuth();
 
+    const validItemId = IdSchema.safeParse(itemId);
+    const validEmpId = empIdSchema.safeParse(newEmpId);
+    if (!validItemId.success || !validEmpId.success) {
+        throw new Error('Invalid input');
+    }
+
     try {
         const updatedItem = await prisma.item.update({
             where: { id: itemId },
@@ -86,6 +108,11 @@ export async function updateItemEmpId(itemId: string, newEmpId: string) {
 
 export async function deleteItem(itemId: string) {
     await requireAuth();
+
+    const validItemId = IdSchema.safeParse(itemId);
+    if (!validItemId.success) {
+        throw new Error('Invalid item ID');
+    }
 
     try {
         const deletedItem = await prisma.item.delete({

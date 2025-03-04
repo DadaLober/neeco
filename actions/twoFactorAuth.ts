@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import speakeasy from "speakeasy";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "./roleActions";
+import { otpSchema } from "@/schemas";
 
 export async function setup2FA() {
     const session = await requireAuth();
@@ -20,13 +21,18 @@ export async function setup2FA() {
 
         return { qrCodeDataURL };
     } catch (error) {
-        console.error(error);
+        console.error("Error setting up 2FA:", error);
         throw new Error("Error setting up 2FA");
     }
 }
 
 export async function verify2FA(otp: string) {
     const session = await requireAuth();
+    const parsedOtp = otpSchema.safeParse(otp);
+
+    if (!parsedOtp.success) {
+        return { success: false, error: "Invalid OTP format" };
+    }
 
     try {
         const user = await prisma.user.findUnique({
@@ -52,7 +58,7 @@ export async function verify2FA(otp: string) {
             return { success: false };
         }
     } catch (error) {
-        console.error(error);
+        console.error("Error verifying 2FA:", error);
         throw new Error("Error verifying 2FA");
     }
 }
@@ -68,7 +74,7 @@ export async function disable2FA() {
 
         return { success: true };
     } catch (error) {
-        console.error(error);
+        console.error("Error disabling 2FA:", error);
         throw new Error("Error disabling 2FA");
     }
 }

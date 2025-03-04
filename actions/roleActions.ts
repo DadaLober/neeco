@@ -1,28 +1,28 @@
-'use server'
+'use server';
 
 import { auth } from "@/auth";
+import { UserRoleSchema } from "@/schemas";
 
-//Get user roles
+// Get user roles
 export async function getUserRoles(): Promise<string[]> {
-  return ['USER', 'ADMIN', 'MODERATOR'];
+  return UserRoleSchema.options;
 }
 
-//Check if a role is valid
+// Check if a role is valid
 export async function isValidRole(role: string): Promise<boolean> {
-  const roles = await getUserRoles();
-  return roles.includes(role);
+  return UserRoleSchema.safeParse(role).success;
 }
 
 // Validate user role and return the validated role
 export async function isAdmin(userRole?: string): Promise<boolean> {
   if (!userRole) return false;
-  return userRole === 'ADMIN';
+  return userRole === "ADMIN";
 }
 
 // Check if a user has moderator or admin privileges
 export async function isAdminOrModerator(userRole?: string): Promise<boolean> {
   if (!userRole) return false;
-  return ['ADMIN', 'MODERATOR'].includes(userRole);
+  return ["ADMIN", "MODERATOR"].includes(userRole);
 }
 
 // Check if a user has admin privileges
@@ -30,7 +30,7 @@ export async function requireAdmin() {
   const session = await auth();
   const userRole = session?.user?.role;
   if (!(await isAdmin(userRole))) {
-    throw new Error('Unauthorized: Admin access required');
+    throw new Error("Unauthorized: Admin access required");
   }
 }
 
@@ -38,11 +38,11 @@ export async function requireAdmin() {
 export async function requireAuth() {
   const session = await auth();
   if (!session?.user) {
-    throw new Error('Unauthorized: Authentication required');
+    throw new Error("Unauthorized: Authentication required");
   }
 
-  if (!await isValidRole(session.user.role)) {
-    throw new Error('Unauthorized: Insufficient permissions');
+  if (!(await isValidRole(session.user.role))) {
+    throw new Error("Unauthorized: Insufficient permissions");
   }
 
   return session;
