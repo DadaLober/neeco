@@ -11,7 +11,6 @@ import {
     FileTextIcon,
     PackageIcon,
     ThumbsDownIcon,
-    UserIcon,
     XIcon,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -34,9 +33,8 @@ interface DataCardProps {
     itemStatus: string
     purpose: string
     supplier: string
-    oic: string
+    oic: boolean
     date: string | Date
-    pdfUrl: string
 }
 
 export default function DataCard({
@@ -48,7 +46,6 @@ export default function DataCard({
     supplier,
     oic,
     date,
-    pdfUrl,
 }: DataCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -127,17 +124,11 @@ export default function DataCard({
                     {/* Always visible summary */}
                     <div className="mt-2 text-xs sm:text-sm text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
                         <div className="flex items-center gap-1">
-                            <PackageIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                             <span className="truncate">{itemType}</span>
                         </div>
                         <div className="flex items-center gap-1">
                             <CalendarIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                             <span>{formattedDate}</span>
-                        </div>
-                        {/* PDF indicator in collapsed view */}
-                        <div className="flex items-center gap-1 text-primary">
-                            <FileTextIcon className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
-                            <span>Document</span>
                         </div>
                     </div>
                 </CardHeader>
@@ -154,14 +145,8 @@ export default function DataCard({
                             <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-3">
                                     <div>
-                                        <p className="text-xs sm:text-sm font-medium text-muted-foreground">ID</p>
-                                        <p className="text-sm sm:text-base">{id}</p>
-                                    </div>
-
-                                    <div>
                                         <p className="text-xs sm:text-sm font-medium text-muted-foreground">Item Type</p>
                                         <div className="flex items-center gap-1">
-                                            <PackageIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                                             <p className="text-sm sm:text-base">{itemType}</p>
                                         </div>
                                     </div>
@@ -179,8 +164,7 @@ export default function DataCard({
                                     <div>
                                         <p className="text-xs sm:text-sm font-medium text-muted-foreground">OIC</p>
                                         <div className="flex items-center gap-1">
-                                            <UserIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                                            <p className="text-sm sm:text-base">{oic}</p>
+                                            <p className="text-sm sm:text-base">{oic ? "True" : "False"}</p>
                                         </div>
                                     </div>
 
@@ -228,7 +212,7 @@ export default function DataCard({
 
             {/* Document Viewer Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[800px] lg:max-w-[900px] w-[95vw] max-h-[90vh] p-0 overflow-hidden">
+                <DialogContent className="sm:max-w-[800px] lg:max-w-[900px] w-[95vw] max-h-[95vh] p-0 overflow-hidden">
                     <div className="p-4 sm:p-6 pb-0">
                         <DialogHeader>
                             <DialogTitle className="text-base sm:text-lg">Document #{referenceNo}</DialogTitle>
@@ -241,7 +225,7 @@ export default function DataCard({
                     {/* PDF Viewer */}
                     <div className="flex-1 h-[50vh] sm:h-[65vh] w-full overflow-hidden">
                         <iframe
-                            src={`https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`}
+                            src={`https://docs.google.com/gview?url=${encodeURIComponent('https://documentcloud.adobe.com/view-sdk-demo/PDFs/Bodea%20Brochure.pdf')}&embedded=true`}
                             className="w-full h-[80vh] border-0"
                             title={`Document for ${referenceNo}`}
                             allowFullScreen
