@@ -37,11 +37,11 @@ model Item {
   id          String   @id @default(cuid())
   referenceNo String   @unique
   itemType    String
-  status      String
-  empId       String
+  itemStatus  String
+  purpose     String
+  supplier    String
   oic         Boolean  @default(false)
   date        DateTime
-  time        DateTime
 }
 
 // model Account {

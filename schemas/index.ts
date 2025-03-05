@@ -3,7 +3,10 @@ import { z } from "zod"
 export const callbackUrlSchema = z.string().url().optional();
 
 export const IdSchema = z.string().uuid();
-export const UserRoleSchema = z.enum(['ADMIN', 'USER', 'MODERATOR']);
+export const UserRoleSchema = z.enum(['ADMIN', 'USER']);
+export const ItemTypeSchema = z.enum(['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',
+    'PO', 'RET', 'RM', 'RR', 'RS', 'RV', 'SA', 'SOP', 'ST', 'TMZ', 'TO', 'TOA']);
+export const ItemStatusSchema = z.enum(['APP', 'AUD', 'CHK', 'CON', 'FPO', 'NOC', 'NOT', 'PRV', 'RCV', 'REC', 'REQ', 'VER']);
 export const otpSchema = z.string().length(6).regex(/^[0-9]+$/);
 export const UserStatusSchema = z.boolean();
 
