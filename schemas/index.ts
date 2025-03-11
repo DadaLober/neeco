@@ -8,7 +8,7 @@ export function validateRole(role: string): string | null {
 export const UserRoleSchema = z.enum(['USER', 'ADMIN'])
 
 export const callbackUrlSchema = z.string().url().optional()
-export const IdSchema = z.string().uuid()
+export const IdSchema = z.string().cuid()
 
 export const ItemTypeSchema = z.enum(['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',
     'PO', 'RET', 'RM', 'RR', 'RS', 'RV', 'SA', 'SOP', 'ST', 'TMZ', 'TO', 'TOA']);

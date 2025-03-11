@@ -46,7 +46,7 @@ export async function deleteUser(
   if (!(await isAdmin(session))) {
     return { message: "Unauthorized" }
   }
-
+  console.log(userId);
   const parsedId = IdSchema.safeParse(userId);
 
   if (!parsedId.success) {
