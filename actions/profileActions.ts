@@ -27,7 +27,7 @@ export async function updateUserProfile(formData: FormData) {
       const buffer = Buffer.from(bytes);
 
       // Create unique filename
-      const filename = `${session.user.id}-${Date.now()}-${avatarFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const filename = `${session?.user.id}-${Date.now()}-${avatarFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
       const path = join(process.cwd(), 'public', 'avatars', filename);
 
       // Ensure directory exists
@@ -37,7 +37,7 @@ export async function updateUserProfile(formData: FormData) {
 
     // Update user in database
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: session?.user.id },
       data: {
         ...(newName && { name: newName }),
         ...(avatarPath && { image: avatarPath }),

@@ -110,6 +110,7 @@ export async function complete2FALogin(callbackUrl?: string) {
 export async function register(values: RegisterInput, callbackUrl?: string | null) {
     const result = registerSchema.safeParse(values);
     const parsedCallbackUrl = callbackUrlSchema.safeParse(callbackUrl);
+    const defaultRole = "USER"
 
     if (!result.success) {
         return { error: "Invalid input" };
@@ -132,6 +133,7 @@ export async function register(values: RegisterInput, callbackUrl?: string | nul
             data: {
                 name: values.name,
                 email: values.email,
+                role: defaultRole,
                 password: hashedPassword,
             },
         });

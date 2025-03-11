@@ -12,7 +12,7 @@ export async function setup2FA() {
 
     try {
         await prisma.user.update({
-            where: { id: session.user.id },
+            where: { id: session?.user.id },
             data: { twoFASecret: secret.base32 },
         });
 
@@ -36,7 +36,7 @@ export async function verify2FA(otp: string) {
 
     try {
         const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
+            where: { id: session?.user.id },
             select: { twoFASecret: true },
         });
 
@@ -50,7 +50,7 @@ export async function verify2FA(otp: string) {
 
         if (verified) {
             await prisma.user.update({
-                where: { id: session.user.id },
+                where: { id: session?.user.id },
                 data: { is2FAEnabled: true },
             });
             return { success: true };
@@ -67,7 +67,7 @@ export async function disable2FA() {
     const session = await auth();
     try {
         await prisma.user.update({
-            where: { id: session.user.id },
+            where: { id: session?.user.id },
             data: { twoFASecret: null, is2FAEnabled: false },
         });
 

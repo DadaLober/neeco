@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { auth as requireAuth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { IdSchema, ItemStatusSchema } from '@/schemas';
+import { IdSchema } from '@/schemas';
 
 const statusSchema = z.string().min(1).max(50);
 

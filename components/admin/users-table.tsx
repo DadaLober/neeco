@@ -37,55 +37,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
-
-// Mock data to simulate the getAllUsers action
-const mockUsers = [
-    {
-        id: "1",
-        name: "John Doe",
-        email: "john@example.com",
-        role: "admin",
-        isActive: true,
-        lastLogin: "2023-10-15T10:30:00Z",
-        loginAttempts: 0,
-    },
-    {
-        id: "2",
-        name: "Jane Smith",
-        email: "jane@example.com",
-        role: "user",
-        isActive: true,
-        lastLogin: "2023-10-14T14:45:00Z",
-        loginAttempts: 0,
-    },
-    {
-        id: "3",
-        name: "Bob Johnson",
-        email: "bob@example.com",
-        role: "editor",
-        isActive: false,
-        lastLogin: "2023-09-30T09:15:00Z",
-        loginAttempts: 3,
-    },
-    {
-        id: "4",
-        name: "Alice Williams",
-        email: "alice@example.com",
-        role: "user",
-        isActive: true,
-        lastLogin: "2023-10-12T16:20:00Z",
-        loginAttempts: 0,
-    },
-    {
-        id: "5",
-        name: "Charlie Brown",
-        email: "charlie@example.com",
-        role: "moderator",
-        isActive: true,
-        lastLogin: "2023-10-10T11:05:00Z",
-        loginAttempts: 1,
-    },
-]
+import { User } from "@/schemas/types"
 
 // Available roles for the setRole action
 const availableRoles = ["user", "editor", "moderator", "admin"]
@@ -93,18 +45,22 @@ const availableRoles = ["user", "editor", "moderator", "admin"]
 type SortField = "name" | "email" | "role" | "isActive" | "lastLogin" | "loginAttempts"
 type SortDirection = "asc" | "desc" | null
 
-export function UsersTable() {
-    const [users, setUsers] = useState(mockUsers)
+interface UsersTableProps {
+    initialUsers: User[];
+}
+
+export function UsersTable({ initialUsers }: UsersTableProps) {
+    const [users, setUsers] = useState<User[]>(initialUsers)
     const [searchQuery, setSearchQuery] = useState("")
     const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-    const [selectedUser, setSelectedUser] = useState<(typeof mockUsers)[0] | null>(null)
+    const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [newRole, setNewRole] = useState("")
 
     const [sortField, setSortField] = useState<SortField | null>(null)
     const [sortDirection, setSortDirection] = useState<SortDirection>(null)
 
-    // Filter users based on search query
+    // Handle sorting logic
     const handleSort = (field: SortField) => {
         if (sortField === field) {
             // Toggle direction if already sorting by this field
@@ -145,7 +101,10 @@ export function UsersTable() {
                 case "isActive":
                     return direction * (a.isActive === b.isActive ? 0 : a.isActive ? -1 : 1)
                 case "lastLogin":
-                    return direction * (new Date(a.lastLogin).getTime() - new Date(b.lastLogin).getTime())
+                    if (a.lastLogin === null && b.lastLogin === null) return 0
+                    if (a.lastLogin === null) return direction
+                    if (b.lastLogin === null) return -direction
+                    return direction * (a.lastLogin.getTime() - b.lastLogin.getTime())
                 case "loginAttempts":
                     return direction * (a.loginAttempts - b.loginAttempts)
                 default:
@@ -173,8 +132,8 @@ export function UsersTable() {
     }
 
     // Format date for display
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleString()
+    const formatDate = (date: Date) => {
+        return date.toLocaleString()
     }
 
     return (
@@ -329,7 +288,7 @@ export function UsersTable() {
                                             </div>
                                         )}
                                     </TableCell>
-                                    <TableCell>{formatDate(user.lastLogin)}</TableCell>
+                                    <TableCell>{formatDate(user.lastLogin ?? new Date())}</TableCell>
                                     <TableCell>
                                         {user.loginAttempts > 0 ? (
                                             <Badge variant="outline" className="text-amber-500 border-amber-500">
@@ -434,4 +393,3 @@ export function UsersTable() {
         </div>
     )
 }
-
