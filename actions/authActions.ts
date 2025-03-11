@@ -7,7 +7,7 @@ import { hash } from "bcrypt";
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { AuthError } from "next-auth";
-import { requireAuth } from "./roleActions";
+// import { requireAuth } from "./roleActions";
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -95,7 +95,7 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
 }
 
 export async function complete2FALogin(callbackUrl?: string) {
-    await requireAuth();
+    // await requireAuth();
     const parsedCallbackUrl = callbackUrlSchema.safeParse(callbackUrl);
     try {
         await (await cookies()).delete("2fa_enabled");

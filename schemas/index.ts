@@ -1,9 +1,15 @@
 import { z } from "zod"
 
-export const callbackUrlSchema = z.string().url().optional();
+export function validateRole(role: string): string | null {
+    const parsedRole = UserRoleSchema.safeParse(role);
+    return parsedRole.success ? parsedRole.data : null;
+}
 
-export const IdSchema = z.string().uuid();
-export const UserRoleSchema = z.enum(['ADMIN', 'USER']);
+export const UserRoleSchema = z.enum(['USER', 'ADMIN'])
+
+export const callbackUrlSchema = z.string().url().optional()
+export const IdSchema = z.string().uuid()
+
 export const ItemTypeSchema = z.enum(['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',
     'PO', 'RET', 'RM', 'RR', 'RS', 'RV', 'SA', 'SOP', 'ST', 'TMZ', 'TO', 'TOA']);
 export const ItemStatusSchema = z.enum(['APP', 'AUD', 'CHK', 'CON', 'FPO', 'NOC', 'NOT', 'PRV', 'RCV', 'REC', 'REQ', 'VER']);

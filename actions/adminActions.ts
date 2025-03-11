@@ -1,128 +1,87 @@
 'use server'
 
+import { Session } from 'next-auth';
+import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { requireAdmin } from './roleActions';
-import { revalidatePath } from 'next/cache';
+import { IdSchema, validateRole } from '@/schemas';
+import { UnauthorizedResponse, User } from '@/schemas/types';
 
-import { IdSchema, UserRoleSchema, UserStatusSchema } from '@/schemas';
-
-export async function getAllUsers() {
-  await requireAdmin();
-
-  try {
-    return await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        lastLogin: true,
-        loginAttempts: true,
-      },
-      orderBy: { lastLogin: 'desc' }
-    });
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    throw new Error('Error fetching users');
+export async function getAllUsers(
+  isAdmin: (session: Session | null) => Promise<boolean>,
+  getAllUsers: () => Promise<User[]>
+): Promise<User[] | UnauthorizedResponse> {
+  const session = await auth();
+  if (!(await isAdmin(session))) {
+    return { message: "Unauthorized" }
   }
+  return getAllUsers()
 }
 
-export async function updateUserRole(userId: string, newRole: string) {
-  await requireAdmin();
-
-  const parsedUserId = IdSchema.parse(userId);
-  const parsedRole = UserRoleSchema.parse(newRole);
-
-  try {
-    const updatedUser = await prisma.user.update({
-      where: { id: parsedUserId },
-      data: { role: parsedRole }
-    });
-
-    revalidatePath('/admin');
-    return updatedUser;
-  } catch (error) {
-    console.error('Error updating user role:', error);
-    throw new Error('Error updating user role');
+export async function setRole(
+  isAdmin: (session: Session | null) => Promise<boolean>,
+  userId: string,
+  role: string,
+  setRole: (userId: string, role: string) => Promise<User | UnauthorizedResponse>
+): Promise<User | UnauthorizedResponse> {
+  const session = await auth();
+  if (!(await isAdmin(session))) {
+    return { message: "Unauthorized" }
   }
+
+  const parsedRole = validateRole(role);
+
+  if (!parsedRole) {
+    return { message: "Invalid role" };
+  }
+
+  return setRole(userId, parsedRole);
 }
 
-export async function updateUserStatus(userId: string, isActive: boolean) {
-  await requireAdmin();
-
-  const parsedUserId = IdSchema.parse(userId);
-  const parsedIsActive = UserStatusSchema.parse(isActive);
-
-  try {
-    return await prisma.user.update({
-      where: { id: parsedUserId },
-      data: {
-        isActive: parsedIsActive,
-        ...(parsedIsActive && { loginAttempts: 0 })
-      }
-    });
-  } catch (error) {
-    console.error('Error updating user status:', error);
-    throw new Error('Error updating user status');
+export async function deleteUser(
+  isAdmin: (session: Session | null) => Promise<boolean>,
+  userId: string,
+  deleteUser: (userId: string) => Promise<User | UnauthorizedResponse>
+): Promise<User | UnauthorizedResponse> {
+  const session = await auth();
+  if (!(await isAdmin(session))) {
+    return { message: "Unauthorized" }
   }
+
+  const parsedId = IdSchema.safeParse(userId);
+
+  if (!parsedId.success) {
+    return { message: "Invalid user ID" };
+  }
+
+  const deletedUser = await deleteUser(userId);
+
+  return deletedUser;
 }
 
-export async function resetUserLoginAttempts(userId: string) {
-  await requireAdmin();
-
-  const parsedUserId = IdSchema.parse(userId);
-
-  try {
-    return await prisma.user.update({
-      where: { id: parsedUserId },
-      data: { loginAttempts: 0 }
-    });
-  } catch (error) {
-    console.error('Error resetting user login attempts:', error);
-    throw new Error('Error resetting user login attempts');
-  }
+//Database functions
+export async function setRoleInDB(userId: string, role: string): Promise<User | UnauthorizedResponse> {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: { role: role }
+  });
 }
 
-export async function toggleUserActivation(userId: string) {
-  await requireAdmin();
-
-  const parsedUserId = IdSchema.parse(userId);
-
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: parsedUserId }
-    });
-
-    if (!user) throw new Error('User not found');
-
-    const updatedUser = await prisma.user.update({
-      where: { id: parsedUserId },
-      data: { isActive: !user.isActive }
-    });
-
-    revalidatePath('/admin');
-    return updatedUser;
-  } catch (error) {
-    console.error('Error toggling user activation:', error);
-    throw new Error('Error toggling user activation');
-  }
+export async function getAllUsersFromDB(): Promise<User[]> {
+  return await prisma.user.findMany({
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isActive: true,
+      lastLogin: true,
+      loginAttempts: true,
+    },
+  })
 }
 
-export async function deleteUser(userId: string) {
-  await requireAdmin();
-
-  const parsedUserId = IdSchema.parse(userId);
-
-  try {
-    const deletedUser = await prisma.user.delete({
-      where: { id: parsedUserId }
-    });
-
-    revalidatePath('/admin');
-    return deletedUser;
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    throw new Error('Error deleting user');
-  }
+export async function deleteUserFromDB(userId: string): Promise<User | UnauthorizedResponse> {
+  return await prisma.user.delete({
+    where: { id: userId },
+  });
 }

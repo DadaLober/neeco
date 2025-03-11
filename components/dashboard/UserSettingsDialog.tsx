@@ -91,7 +91,7 @@ export function UserSettingsDialog({ isOpen, onOpenChange, session }: UserSettin
             <h3 className="text-lg font-semibold mb-3">Appearance</h3>
             <div className="grid grid-cols-2 gap-4">
               <Button
-                variant={theme === 'light' ? 'green' : 'greenOutline'}
+                variant="default"
                 onClick={() => setTheme('light')}
                 className="flex items-center justify-center gap-2"
               >
@@ -99,7 +99,7 @@ export function UserSettingsDialog({ isOpen, onOpenChange, session }: UserSettin
                 Light Mode
               </Button>
               <Button
-                variant={theme === 'dark' ? 'green' : 'greenOutline'}
+                variant="default"
                 onClick={() => setTheme('dark')}
                 className="flex items-center justify-center gap-2"
               >
@@ -206,7 +206,7 @@ export function UserSettingsDialog({ isOpen, onOpenChange, session }: UserSettin
                   </p>
                 </div>
                 <Button
-                  variant="green"
+                  variant="default"
                   size="sm"
                   className="bg-[#008033] text-white hover:bg-[#008033]/90"
                 >

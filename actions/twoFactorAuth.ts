@@ -3,11 +3,11 @@
 import QRCode from "qrcode";
 import speakeasy from "speakeasy";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "./roleActions";
+import { auth } from "@/auth";
 import { otpSchema } from "@/schemas";
 
 export async function setup2FA() {
-    const session = await requireAuth();
+    const session = await auth();
     const secret = speakeasy.generateSecret({ length: 20 });
 
     try {
@@ -27,7 +27,7 @@ export async function setup2FA() {
 }
 
 export async function verify2FA(otp: string) {
-    const session = await requireAuth();
+    const session = await auth();
     const parsedOtp = otpSchema.safeParse(otp);
 
     if (!parsedOtp.success) {
@@ -64,8 +64,7 @@ export async function verify2FA(otp: string) {
 }
 
 export async function disable2FA() {
-    const session = await requireAuth();
-
+    const session = await auth();
     try {
         await prisma.user.update({
             where: { id: session.user.id },

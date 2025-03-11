@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from './roleActions';
+import { auth as requireAuth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { IdSchema, ItemStatusSchema } from '@/schemas';

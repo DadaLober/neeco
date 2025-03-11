@@ -85,7 +85,7 @@ export function TwoFactorVerification() {
                 onClick={handleVerify}
                 disabled={otp.some(digit => digit === "") || isVerifying}
                 className="w-full"
-                variant="green"
+                variant="default"
             >
                 {isVerifying ? "Verifying..." : "Verify"}
             </Button>

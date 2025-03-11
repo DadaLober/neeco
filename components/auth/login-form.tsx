@@ -136,7 +136,7 @@ export function LoginForm() {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full" variant={"green"} disabled={isLoading}>
+                    <Button type="submit" className="w-full" variant="default" disabled={isLoading}>
                         {isLoading ? "Signing in..." : "Sign in"}
                     </Button>
                     <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
@@ -146,7 +146,7 @@ export function LoginForm() {
                     </div>
                     <Button
                         type="button"
-                        variant="greenOutline"
+                        variant="default"
                         className="w-full"
                         disabled={isLoading}
                     >

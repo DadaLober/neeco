@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from './roleActions';
+import { auth as requireAuth } from '@/auth';
 import { z } from 'zod';
 
 const nameSchema = z.string().min(1).max(100);

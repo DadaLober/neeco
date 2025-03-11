@@ -109,7 +109,7 @@ export function ProfileDialog({ isOpen, onOpenChange, session }: ProfileDialogPr
             <div className="relative">
               <Avatar className="h-24 w-24">
                 <AvatarImage
-                  src={session?.user?.image!}
+                  src={session?.user?.image || ""}
                   alt="Profile Picture"
                 />
                 <AvatarFallback className="bg-[#008033]/10 text-[#008033]">
