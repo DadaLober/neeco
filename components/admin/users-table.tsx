@@ -37,25 +37,33 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
-import { User } from "@/schemas/types"
+import { User, UnauthorizedResponse } from "@/schemas/types"
+import { setRole, deleteUser, setRoleInDB, deleteUserFromDB } from "@/actions/adminActions"
+import { isAdmin } from "@/actions/roleActions"
+import { toast } from "sonner"
+import AccessDeniedPage from "./access-denied"
 
 // Available roles for the setRole action
-const availableRoles = ["user", "editor", "moderator", "admin"]
+const availableRoles = ["USER", "ADMIN"]
 
 type SortField = "name" | "email" | "role" | "isActive" | "lastLogin" | "loginAttempts"
 type SortDirection = "asc" | "desc" | null
 
 interface UsersTableProps {
-    initialUsers: User[];
+    initialUsers: User[] | UnauthorizedResponse;
 }
 
 export function UsersTable({ initialUsers }: UsersTableProps) {
+
+    if ('message' in initialUsers) return <AccessDeniedPage />
+
     const [users, setUsers] = useState<User[]>(initialUsers)
     const [searchQuery, setSearchQuery] = useState("")
     const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [newRole, setNewRole] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
 
     const [sortField, setSortField] = useState<SortField | null>(null)
     const [sortDirection, setSortDirection] = useState<SortDirection>(null)
@@ -104,7 +112,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                     if (a.lastLogin === null && b.lastLogin === null) return 0
                     if (a.lastLogin === null) return direction
                     if (b.lastLogin === null) return -direction
-                    return direction * (a.lastLogin.getTime() - b.lastLogin.getTime())
+                    return direction * (new Date(a.lastLogin).getTime() - new Date(b.lastLogin).getTime())
                 case "loginAttempts":
                     return direction * (a.loginAttempts - b.loginAttempts)
                 default:
@@ -112,28 +120,63 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
             }
         })
 
-    // Mock implementation of setRole action
-    const handleSetRole = () => {
+    // Implementation using server action to set user role
+    const handleSetRole = async () => {
         if (!selectedUser || !newRole) return
 
-        setUsers(users.map((user) => (user.id === selectedUser.id ? { ...user, role: newRole } : user)))
-        setIsRoleDialogOpen(false)
-        setSelectedUser(null)
-        setNewRole("")
+        try {
+            setIsLoading(true)
+            const response = await setRole(isAdmin, selectedUser.id, newRole, setRoleInDB)
+
+            if ('message' in response) {
+                // Handle error
+                toast(`Error changing role: ${response.message}`)
+            } else {
+                // Update local state with the updated user
+                setUsers(users.map((user) => (user.id === selectedUser.id ? { ...user, role: newRole } : user)))
+                toast(`${selectedUser.name}'s role has been updated to ${newRole}.`,)
+            }
+        } catch (error) {
+            toast("An unexpected error occurred. Please try again.")
+            console.error("Error changing role:", error)
+        } finally {
+            setIsLoading(false)
+            setIsRoleDialogOpen(false)
+            setSelectedUser(null)
+            setNewRole("")
+        }
     }
 
-    // Mock implementation of deleteUser action
-    const handleDeleteUser = () => {
+    // Implementation using server action to delete a user
+    const handleDeleteUser = async () => {
         if (!selectedUser) return
 
-        setUsers(users.filter((user) => user.id !== selectedUser.id))
-        setIsDeleteDialogOpen(false)
-        setSelectedUser(null)
+        try {
+            setIsLoading(true)
+            const response = await deleteUser(isAdmin, selectedUser.id, deleteUserFromDB)
+
+            if ('message' in response) {
+                // Handle error
+                toast(`Error deleting user: ${response.message}`)
+            } else {
+                // Remove the user from the local state
+                setUsers(users.filter((user) => user.id !== selectedUser.id))
+                toast(`${selectedUser.name} has been permanently removed.`)
+            }
+        } catch (error) {
+            toast("An unexpected error occurred. Please try again.")
+            console.error("Error deleting user:", error)
+        } finally {
+            setIsLoading(false)
+            setIsDeleteDialogOpen(false)
+            setSelectedUser(null)
+        }
     }
 
     // Format date for display
-    const formatDate = (date: Date) => {
-        return date.toLocaleString()
+    const formatDate = (date: Date | string | null) => {
+        if (!date) return "Never"
+        return new Date(date).toLocaleString()
     }
 
     return (
@@ -288,7 +331,7 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                                             </div>
                                         )}
                                     </TableCell>
-                                    <TableCell>{formatDate(user.lastLogin ?? new Date())}</TableCell>
+                                    <TableCell>{formatDate(user.lastLogin)}</TableCell>
                                     <TableCell>
                                         {user.loginAttempts > 0 ? (
                                             <Badge variant="outline" className="text-amber-500 border-amber-500">
@@ -364,10 +407,12 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>
+                        <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)} disabled={isLoading}>
                             Cancel
                         </Button>
-                        <Button onClick={handleSetRole}>Save Changes</Button>
+                        <Button onClick={handleSetRole} disabled={isLoading}>
+                            {isLoading ? "Saving..." : "Save Changes"}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -383,9 +428,9 @@ export function UsersTable({ initialUsers }: UsersTableProps) {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteUser} className="bg-red-600 hover:bg-red-700">
-                            Delete
+                        <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteUser} className="bg-red-600 hover:bg-red-700" disabled={isLoading}>
+                            {isLoading ? "Deleting..." : "Delete"}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

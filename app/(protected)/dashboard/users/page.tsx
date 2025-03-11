@@ -4,7 +4,6 @@ import { UsersTable } from "@/components/admin/users-table"
 
 export default async function UsersPage() {
   const data = await getAllUsers(isAdmin, getAllUsersFromDB)
-  console.log(data)
 
   return (
     <div className="p-6 b -card rounded-lg border shadow-sm">
