@@ -5,9 +5,7 @@ export function validateRole(role: string): string | null {
     return parsedRole.success ? parsedRole.data : null;
 }
 
-export const UserRoleSchema = z.enum(['USER', 'ADMIN'])
-
-export const callbackUrlSchema = z.string().url().optional()
+export const UserRoleSchema = z.enum(['USER', 'ADMIN']);
 export const IdSchema = z.string().cuid()
 
 export const ItemTypeSchema = z.enum(['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',

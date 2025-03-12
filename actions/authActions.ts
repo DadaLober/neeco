@@ -1,53 +1,41 @@
 "use server"
 
-import { loginSchema, registerSchema, callbackUrlSchema } from "@/schemas";
-import { signIn } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import { loginSchema, registerSchema } from "@/schemas";
+import { UnauthorizedResponse } from "@/schemas/types";
+import { auth, signIn } from "@/auth";
 import { hash } from "bcrypt";
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { AuthError } from "next-auth";
-// import { requireAuth } from "./roleActions";
+import { createUserInDB, getUserByEmailFromDB, setLastLoginInDB, setLoginAttemptsInDB } from "./databaseActions";
+import { isUserOrAdmin } from "./roleActions";
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 
-export async function login(values: LoginInput, callbackUrl?: string | null) {
+export async function login(
+    values: LoginInput
+): Promise<{ success: true, requires2FA: boolean, callbackUrl: string } | UnauthorizedResponse> {
     const result = loginSchema.safeParse(values);
-    const parsedCallbackUrl = callbackUrlSchema.safeParse(callbackUrl);
 
     if (!result.success) {
         return { error: "Invalid input" };
     }
 
-    const redirectUrl = parsedCallbackUrl.success ? parsedCallbackUrl.data : "/dashboard";
+    const redirectUrl = "/dashboard";
 
     try {
-        const user = await prisma.user.findUnique({
-            where: { email: values.email }
-        });
+        const user = await getUserByEmailFromDB(values.email)
 
-        if (!user || !user.isActive) {
-            return { error: "Account is not active" };
-        }
-
-        await prisma.user.update({
-            where: { email: values.email },
-            data: {
-                lastLogin: new Date(),
-                loginAttempts: 0
-            }
-        });
-
-        const signInResult = await signIn("credentials", {
-            email: values.email,
-            password: values.password,
-            redirect: false
-        });
-
-        if (signInResult?.error) {
+        if (!user) {
             return { error: "Invalid email or password" };
         }
+
+        setLastLoginInDB(values.email)
+
+        await signIn("credentials", {
+            email: values.email, password: values.password, redirect: false
+        });
 
         if (user.is2FAEnabled) {
             try {
@@ -72,16 +60,11 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
         return {
             success: true,
             requires2FA: false,
-            url: redirectUrl
+            callbackUrl: redirectUrl
         };
     } catch (error) {
         if (error instanceof AuthError) {
-            await prisma.user.update({
-                where: { email: values.email },
-                data: {
-                    loginAttempts: { increment: 1 }
-                }
-            });
+            await setLoginAttemptsInDB(values.email);
 
             switch (error.type) {
                 case "CredentialsSignin":
@@ -94,34 +77,37 @@ export async function login(values: LoginInput, callbackUrl?: string | null) {
     }
 }
 
-export async function complete2FALogin(callbackUrl?: string) {
-    // await requireAuth();
-    const parsedCallbackUrl = callbackUrlSchema.safeParse(callbackUrl);
+export async function complete2FALogin(): Promise<{ success: true, redirectUrl: string } | UnauthorizedResponse> {
+    const session = await auth();
+
+    if (!(await isUserOrAdmin(session))) {
+        return { error: "Unauthorized" }
+    }
+
+    const redirectUrl = "/dashboard";
+
     try {
         await (await cookies()).delete("2fa_enabled");
     } catch (error) {
         console.error("Error deleting 2FA cookie:", error);
         return { error: "Something went wrong" };
     }
-    const redirectUrl = parsedCallbackUrl.success ? parsedCallbackUrl.data : "/dashboard";
-    return { success: true, url: redirectUrl };
+
+    return { success: true, redirectUrl: redirectUrl };
 }
 
-export async function register(values: RegisterInput, callbackUrl?: string | null) {
+export async function register(values: RegisterInput) {
     const result = registerSchema.safeParse(values);
-    const parsedCallbackUrl = callbackUrlSchema.safeParse(callbackUrl);
-    const defaultRole = "USER"
 
     if (!result.success) {
         return { error: "Invalid input" };
     }
 
-    const redirectUrl = parsedCallbackUrl.success ? parsedCallbackUrl.data : "/login";
+    const redirectUrl = "/login";
+    const defaultRole = "USER";
 
     try {
-        const existingUser = await prisma.user.findUnique({
-            where: { email: values.email },
-        });
+        const existingUser = await getUserByEmailFromDB(values.email);
 
         if (existingUser) {
             return { error: "Email already in use" };
@@ -129,14 +115,8 @@ export async function register(values: RegisterInput, callbackUrl?: string | nul
 
         const hashedPassword = await hash(values.password, 10);
 
-        await prisma.user.create({
-            data: {
-                name: values.name,
-                email: values.email,
-                role: defaultRole,
-                password: hashedPassword,
-            },
-        });
+        await createUserInDB(values.name, values.email, defaultRole, hashedPassword);
+
         return { success: true, message: "Registration successful", url: redirectUrl };
     } catch (error) {
         return { error: "Something went wrong" };

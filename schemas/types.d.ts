@@ -1,4 +1,4 @@
-export type UnauthorizedResponse = { message: string }
+export type UnauthorizedResponse = { error: string }
 
 export type User = {
     id: string

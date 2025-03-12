@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { complete2FALogin } from "@/actions/authActions"
 import { verify2FA } from "@/actions/twoFactorAuth"
 import { Button } from "@/components/ui/button"
@@ -12,8 +12,6 @@ export function TwoFactorVerification() {
     const [error, setError] = useState<string | null>(null)
     const [isVerifying, setIsVerifying] = useState(false)
     const router = useRouter()
-    const searchParams = useSearchParams()
-    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
 
     // Handle OTP change from child component
     const handleOtpChange = (newOtp: string[]) => {
@@ -38,15 +36,16 @@ export function TwoFactorVerification() {
             const result = await verify2FA(otpString)
 
             if (result.success) {
-                // 2FA verification successful, complete the login process
-                const loginResult = await complete2FALogin(callbackUrl)
+                const loginResult = await complete2FALogin()
 
-                if (loginResult.success) {
-                    router.push(loginResult.url || "/dashboard")
-                } else {
-                    setError(loginResult.error || "Failed to complete login process")
+                if ('error' in loginResult) {
+                    setError(loginResult.error)
                     resetOtp()
+                    return
                 }
+
+                router.push(loginResult.redirectUrl || "/dashboard")
+
             } else {
                 setError("Invalid verification code. Please try again.")
                 resetOtp()

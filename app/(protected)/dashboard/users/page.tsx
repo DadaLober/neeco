@@ -9,7 +9,7 @@ import { User } from "@/schemas/types"
 export default async function UsersPage() {
   const data: User[] | UnauthorizedResponse = await getAllUsers(isAdmin, getAllUsersFromDB)
 
-  if ('message' in data) {
+  if ('error' in data) {
     return <AccessDeniedPage />
   }
 

@@ -41,8 +41,6 @@ export function LoginForm() {
     const [error, setError] = useState<string>("")
     const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
-    const searchParams = useSearchParams()
-    const callbackUrl = searchParams.get("callbackUrl")
 
     const form = useForm<LoginInput>({
         resolver: zodResolver(loginSchema),
@@ -54,23 +52,23 @@ export function LoginForm() {
         setIsLoading(true)
 
         try {
-            const result = await login(values, callbackUrl)
+            const result = await login(values)
 
-            if (result?.error) {
+            if ('error' in result) {
                 setError(result.error)
                 form.setError("root", { message: result.error })
                 return
             }
 
-            if (result?.requires2FA) {
+            if (result.requires2FA) {
                 // Redirect to 2FA verification page, passing the callback URL
                 router.push(`verify-otp/?callbackUrl=${encodeURIComponent(result.callbackUrl || "")}`)
                 return
             }
 
             // Normal login success - redirect
-            if (result?.url) {
-                router.push(result.url)
+            if (result.callbackUrl) {
+                router.push(result.callbackUrl)
             }
         } catch (error) {
             console.error("Login error:", error)

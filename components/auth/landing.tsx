@@ -6,8 +6,6 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react'
 // Utility imports
 import { shapes } from '@/lib/shapes';
 
-const colors = ['#0D3959', '#FF871F', '#E94D35', '#4E6A51'];
-
 const RandomShapesGrid: React.FC = () => {
     const [hoveredIndices, setHoveredIndices] = useState<Set<number>>(new Set())
     const [rippleIndices, setRippleIndices] = useState<Map<number, number>>(new Map())

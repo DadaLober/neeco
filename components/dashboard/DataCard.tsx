@@ -9,7 +9,6 @@ import {
     ChevronUpIcon,
     ClipboardIcon,
     FileTextIcon,
-    PackageIcon,
     ThumbsDownIcon,
     XIcon,
 } from "lucide-react"
@@ -38,7 +37,6 @@ interface DataCardProps {
 }
 
 export default function DataCard({
-    id,
     referenceNo,
     itemType,
     itemStatus,
