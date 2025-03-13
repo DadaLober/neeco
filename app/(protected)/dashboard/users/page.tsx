@@ -1,4 +1,4 @@
-import { getAllUsers, getAllUsersFromDB } from "@/actions/adminActions"
+import { getAllUsers } from "@/actions/adminActions"
 import { isAdmin } from "@/actions/roleActions"
 import AccessDeniedPage from "@/components/admin/access-denied"
 import { UsersTable } from "@/components/admin/users-table"
@@ -7,7 +7,7 @@ import { User } from "@/schemas/types"
 
 
 export default async function UsersPage() {
-  const data: User[] | UnauthorizedResponse = await getAllUsers(isAdmin, getAllUsersFromDB)
+  const data: User[] | UnauthorizedResponse = await getAllUsers(isAdmin)
 
   if ('error' in data) {
     return <AccessDeniedPage />

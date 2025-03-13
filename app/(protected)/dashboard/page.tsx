@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import DataCard from "@/components/dashboard/DataCard";
 import { getAllItems } from "@/actions/itemActions";
+import { getAllItemsFromDB } from "@/actions/databaseActions";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -10,7 +11,12 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const items = await getAllItems()
+  const items = await getAllItems(getAllItemsFromDB)
+
+
+  if ('error' in items) {
+    return <div>Error fetching items</div>
+  }
 
   return (
     <div className="container mx-auto p-4 space-y-6">

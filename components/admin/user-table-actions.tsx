@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { deleteUser, deleteUserFromDB, setRole, setRoleInDB } from "@/actions/adminActions";
+import { deleteUser, setRole } from "@/actions/adminActions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -22,7 +22,7 @@ export function UsersTableActions({ user }: { user: { id: string; name: string; 
 
     const handleSetRole = async () => {
         setLoading(true);
-        await setRole(isAdmin, user.id, newRole, setRoleInDB);
+        await setRole(isAdmin, user.id, newRole);
         setLoading(false);
         setIsRoleDialogOpen(false);
         router.refresh();
@@ -30,7 +30,7 @@ export function UsersTableActions({ user }: { user: { id: string; name: string; 
 
     const handleDeleteUser = async () => {
         setLoading(true);
-        await deleteUser(isAdmin, user.id, deleteUserFromDB);
+        await deleteUser(isAdmin, user.id);
         setLoading(false);
         setIsDeleteDialogOpen(false);
         router.refresh(); // Refresh UI after user deletion

@@ -9,3 +9,14 @@ export type User = {
     lastLogin: Date | null
     loginAttempts: number
 }
+
+export type Item = {
+    id: string;
+    referenceNo: string;
+    itemType: string;
+    itemStatus: string;
+    purpose: string;
+    supplier: string;
+    oic: boolean;
+    date: Date;
+}

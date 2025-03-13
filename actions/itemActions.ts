@@ -1,102 +1,99 @@
 "use server";
 
-import { prisma } from '@/lib/prisma';
-import { auth as requireAuth } from '@/auth';
-import { revalidatePath } from 'next/cache';
+import { auth } from '@/auth';
 import { z } from 'zod';
 import { IdSchema } from '@/schemas';
+import { isUserOrAdmin } from './roleActions';
+import { Item, UnauthorizedResponse } from '@/schemas/types';
 
 const statusSchema = z.string().min(1).max(50);
 
-export async function getAllItems() {
-    await requireAuth();
+export async function getAllItems(
+    getAllItems: () => Promise<Item[]>
+): Promise<Item[] | UnauthorizedResponse> {
+    const session = await auth();
+
+    if (!(await isUserOrAdmin(session))) {
+        return { error: "Unauthorized" }
+    }
 
     try {
-        return prisma.item.findMany({
-            select: {
-                id: true,
-                referenceNo: true,
-                itemType: true,
-                itemStatus: true,
-                purpose: true,
-                supplier: true,
-                oic: true,
-                date: true,
-            },
-            orderBy: { date: 'desc' }
-        });
+        return getAllItems();
+
     } catch (error) {
         console.error(error);
-        throw new Error('Error fetching items');
+        return { error: "Error fetching items" };
     }
 }
 
-export async function updateItemStatus(itemId: string, newStatus: string) {
-    await requireAuth();
+export async function updateItemStatus(
+    itemId: string,
+    newStatus: string,
+    updateItemStatus: () => Promise<Item>
+): Promise<Item | UnauthorizedResponse> {
+    const session = await auth();
+
+    if (!(await isUserOrAdmin(session))) {
+        return { error: "Unauthorized" }
+    }
 
     const validItemId = IdSchema.safeParse(itemId);
     const validStatus = statusSchema.safeParse(newStatus);
+
     if (!validItemId.success || !validStatus.success) {
         throw new Error('Invalid input');
     }
 
     try {
-        const updatedItem = await prisma.item.update({
-            where: { id: itemId },
-            data: { itemStatus: newStatus }
-        });
-
-        revalidatePath('/admin');
-        return updatedItem;
+        return updateItemStatus();
     } catch (error) {
         console.error(error);
         throw new Error('Error updating item status');
     }
 }
 
-export async function toggleItemOIC(itemId: string) {
-    await requireAuth();
+export async function toggleItemOIC(
+    itemId: string,
+    toggleItemOIC: () => Promise<Item | UnauthorizedResponse>
+): Promise<Item | UnauthorizedResponse> {
+    const session = await auth();
+
+    if (!(await isUserOrAdmin(session))) {
+        return { error: "Unauthorized" }
+    }
 
     const validItemId = IdSchema.safeParse(itemId);
+
     if (!validItemId.success) {
-        throw new Error('Invalid item ID');
+        return { error: "Invalid item ID" };
     }
 
     try {
-        const item = await prisma.item.findUnique({
-            where: { id: itemId }
-        });
-
-        if (!item) return null;
-
-        const updatedItem = await prisma.item.update({
-            where: { id: itemId },
-            data: { oic: !item.oic }
-        });
-
-        revalidatePath('/admin');
-        return updatedItem;
+        return toggleItemOIC();
     } catch (error) {
         console.error(error);
         throw new Error('Error toggling item OIC');
     }
 }
 
-export async function deleteItem(itemId: string) {
-    await requireAuth();
+export async function deleteItem(
+    itemId: string,
+    deleteItem: () => Promise<Item | UnauthorizedResponse>
+): Promise<Item | UnauthorizedResponse> {
+    const session = await auth();
+
+    if (!(await isUserOrAdmin(session))) {
+        return { error: "Unauthorized" }
+    }
 
     const validItemId = IdSchema.safeParse(itemId);
+
     if (!validItemId.success) {
         throw new Error('Invalid item ID');
     }
 
     try {
-        const deletedItem = await prisma.item.delete({
-            where: { id: itemId }
-        });
-
-        revalidatePath('/admin');
-        return deletedItem;
+        return await deleteItem();
     } catch (error) {
         console.error(error);
         throw new Error('Error deleting item');
