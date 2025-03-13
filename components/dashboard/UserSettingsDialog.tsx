@@ -42,8 +42,9 @@ export function UserSettingsDialog({ isOpen, onOpenChange, session }: UserSettin
       setLoading(true);
       if (enabled) {
         const response = await setup2FA();
-        if (!response?.qrCodeDataURL) {
-          throw new Error("Failed to generate QR code");
+
+        if ('error' in response) {
+          throw new Error(response.error);
         }
         setQrCode(response.qrCodeDataURL);
         setShowQRDialog(true);
@@ -65,15 +66,15 @@ export function UserSettingsDialog({ isOpen, onOpenChange, session }: UserSettin
     try {
       setLoading(true);
       const response = await verify2FA(otp);
-      if (response?.success) {
-        setTwoFactorAuthEnabled(true);
-        setQrCode(null);
-      } else {
-        alert("Invalid OTP. Try again.");
+
+      if ('error' in response) {
+        throw new Error(response.error);
       }
+
+      setTwoFactorAuthEnabled(true);
+      setQrCode(null);
     } catch (error) {
-      console.error("Failed to verify OTP:", error);
-      alert("Something went wrong. Please try again.");
+      alert("Incorrect OTP. Please try again.");
     } finally {
       setLoading(false);
     }

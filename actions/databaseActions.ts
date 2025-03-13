@@ -35,6 +35,12 @@ export async function getUserByEmailFromDB(email: string): Promise<User & { is2F
     })
 }
 
+export async function getUserByIDFromDB(userId: string): Promise<User & { twoFASecret: string | null } | null> {
+    return await prisma.user.findUnique({
+        where: { id: userId },
+    });
+}
+
 export async function setLastLoginInDB(email: string): Promise<User> {
     return await prisma.user.update({
         where: { email: email },
@@ -101,5 +107,28 @@ export async function updateItemStatusInDB(itemId: string, newStatus: string): P
 export async function deleteItemInDB(itemId: string): Promise<Item | UnauthorizedResponse> {
     return await prisma.item.delete({
         where: { id: itemId }
+    });
+}
+
+export async function setup2FAInDB(userId: string, twoFASecret: string): Promise<User> {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: {
+            twoFASecret: twoFASecret
+        },
+    });
+}
+
+export async function verify2FAInDB(userId: string): Promise<User> {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: { is2FAEnabled: true },
+    });
+}
+
+export function disable2FAInDB(userId: string): Promise<User> {
+    return prisma.user.update({
+        where: { id: userId },
+        data: { is2FAEnabled: false, twoFASecret: null },
     });
 }

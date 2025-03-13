@@ -1,12 +1,12 @@
 "use server"
 
-import { loginSchema, registerSchema } from "@/schemas";
-import { UnauthorizedResponse } from "@/schemas/types";
-import { auth, signIn } from "@/auth";
 import { hash } from "bcrypt";
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { AuthError } from "next-auth";
+import { auth, signIn } from "@/auth";
+import { loginSchema, registerSchema } from "@/schemas";
+import { UnauthorizedResponse } from "@/schemas/types";
 import { createUserInDB, getUserByEmailFromDB, setLastLoginInDB, setLoginAttemptsInDB } from "./databaseActions";
 import { isUserOrAdmin } from "./roleActions";
 

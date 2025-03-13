@@ -84,14 +84,14 @@ export function ProfileDialog({ isOpen, onOpenChange, session }: ProfileDialogPr
       const result = await updateUserProfile(formData);
 
       if (result.error) {
-        console.error('Failed to update profile', result.error);
+        alert(`Failed to update profile: ${result.error}`);
         return;
       }
 
       // Close the dialog
       onOpenChange(false);
     } catch (error) {
-      console.error('Failed to update profile', error);
+      alert(`Failed to update profile: ${error}`);
     }
   };
 

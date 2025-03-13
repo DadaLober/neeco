@@ -35,7 +35,7 @@ export function TwoFactorVerification() {
             const otpString = otp.join("")
             const result = await verify2FA(otpString)
 
-            if (result.success) {
+            if (result) {
                 const loginResult = await complete2FALogin()
 
                 if ('error' in loginResult) {
