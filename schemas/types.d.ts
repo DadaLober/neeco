@@ -10,11 +10,11 @@ export type User = {
     loginAttempts: number
 }
 
-export type Item = {
+export type Documents = {
     id: string;
     referenceNo: string;
-    itemType: string;
-    itemStatus: string;
+    documentType: string;
+    documentStatus: string;
     purpose: string;
     supplier: string;
     oic: boolean;

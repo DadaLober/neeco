@@ -1,13 +1,7 @@
 import { prisma } from '@/lib/prisma';
-import { Item, UnauthorizedResponse, User } from '@/schemas/types';
+import { Documents, UnauthorizedResponse, User } from '@/schemas/types';
 
 //Database functions
-export async function setRoleInDB(userId: string, role: string): Promise<User> {
-    return await prisma.user.update({
-        where: { id: userId },
-        data: { role: role }
-    });
-}
 
 export async function getAllUsersFromDB(): Promise<User[]> {
     return await prisma.user.findMany({
@@ -41,6 +35,13 @@ export async function getUserByIDFromDB(userId: string): Promise<User & { twoFAS
     });
 }
 
+export async function setRoleInDB(userId: string, role: string): Promise<User> {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: { role: role }
+    });
+}
+
 export async function setLastLoginInDB(email: string): Promise<User> {
     return await prisma.user.update({
         where: { email: email },
@@ -66,13 +67,13 @@ export async function createUserInDB(name: string, email: string, role: string, 
     });
 }
 
-export async function getAllItemsFromDB() {
-    return await prisma.item.findMany({
+export async function getAllDocumentsFromDB() {
+    return await prisma.documents.findMany({
         select: {
             id: true,
             referenceNo: true,
-            itemType: true,
-            itemStatus: true,
+            documentType: true,
+            documentStatus: true,
             purpose: true,
             supplier: true,
             oic: true,
@@ -82,31 +83,31 @@ export async function getAllItemsFromDB() {
     });
 }
 
-export async function toggleItemOICInDB(itemId: string): Promise<Item | UnauthorizedResponse> {
-    const item = await prisma.item.findUnique({
-        where: { id: itemId }
+export async function toggleDocumentsOICInDB(documentsId: string): Promise<Documents | UnauthorizedResponse> {
+    const documents = await prisma.documents.findUnique({
+        where: { id: documentsId }
     });
 
-    if (!item) {
-        return { error: "Item not found" };
+    if (!documents) {
+        return { error: "documents not found" };
     }
 
-    return await prisma.item.update({
-        where: { id: itemId },
-        data: { oic: !item.oic }
+    return await prisma.documents.update({
+        where: { id: documentsId },
+        data: { oic: !documents.oic }
     });
 }
 
-export async function updateItemStatusInDB(itemId: string, newStatus: string): Promise<Item> {
-    return await prisma.item.update({
-        where: { id: itemId },
-        data: { itemStatus: newStatus }
+export async function updateDocumentsStatusInDB(documentsId: string, newStatus: string): Promise<Documents> {
+    return await prisma.documents.update({
+        where: { id: documentsId },
+        data: { documentStatus: newStatus }
     });
 }
 
-export async function deleteItemInDB(itemId: string): Promise<Item | UnauthorizedResponse> {
-    return await prisma.item.delete({
-        where: { id: itemId }
+export async function deleteDocumentsInDB(documentsId: string): Promise<Documents | UnauthorizedResponse> {
+    return await prisma.documents.delete({
+        where: { id: documentsId }
     });
 }
 

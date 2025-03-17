@@ -13,9 +13,8 @@ import { isUserOrAdmin } from "./roleActions";
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 
-export async function login(
-    values: LoginInput
-): Promise<{ success: true, requires2FA: boolean, callbackUrl: string } | UnauthorizedResponse> {
+export async function login(values: LoginInput):
+    Promise<{ success: true, requires2FA: boolean, callbackUrl: string } | UnauthorizedResponse> {
     const result = loginSchema.safeParse(values);
 
     if (!result.success) {
@@ -77,7 +76,7 @@ export async function login(
     }
 }
 
-export async function complete2FALogin(): Promise<{ success: true, redirectUrl: string } | UnauthorizedResponse> {
+export async function complete2FALogin(): Promise<{ success: true, callbackUrl: string } | UnauthorizedResponse> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
@@ -93,10 +92,10 @@ export async function complete2FALogin(): Promise<{ success: true, redirectUrl: 
         return { error: "Something went wrong" };
     }
 
-    return { success: true, redirectUrl: redirectUrl };
+    return { success: true, callbackUrl: redirectUrl };
 }
 
-export async function register(values: RegisterInput) {
+export async function register(values: RegisterInput): Promise<{ success: true, callbackUrl: string } | UnauthorizedResponse> {
     const result = registerSchema.safeParse(values);
 
     if (!result.success) {
@@ -117,7 +116,7 @@ export async function register(values: RegisterInput) {
 
         await createUserInDB(values.name, values.email, defaultRole, hashedPassword);
 
-        return { success: true, message: "Registration successful", url: redirectUrl };
+        return { success: true, callbackUrl: redirectUrl };
     } catch (error) {
         return { error: "Something went wrong" };
     }

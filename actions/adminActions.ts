@@ -1,14 +1,12 @@
 'use server'
 
-import { Session } from 'next-auth';
 import { auth } from '@/auth';
 import { IdSchema, validateRole } from '@/schemas';
 import { UnauthorizedResponse, User } from '@/schemas/types';
 import { deleteUserFromDB, getAllUsersFromDB, setRoleInDB } from './databaseActions';
+import { isAdmin } from './roleActions';
 
-export async function getAllUsers(
-  isAdmin: (session: Session | null) => Promise<boolean>,
-): Promise<User[] | UnauthorizedResponse> {
+export async function getAllUsers(): Promise<User[] | UnauthorizedResponse> {
   const session = await auth();
   if (!(await isAdmin(session))) {
     return { error: "Unauthorized" }
@@ -16,11 +14,7 @@ export async function getAllUsers(
   return await getAllUsersFromDB()
 }
 
-export async function setRole(
-  isAdmin: (session: Session | null) => Promise<boolean>,
-  userId: string,
-  role: string,
-): Promise<User | UnauthorizedResponse> {
+export async function setRole(userId: string, role: string): Promise<User | UnauthorizedResponse> {
   const session = await auth();
   if (!(await isAdmin(session))) {
     return { error: "Unauthorized" }
@@ -35,10 +29,7 @@ export async function setRole(
   return await setRoleInDB(userId, parsedRole);
 }
 
-export async function deleteUser(
-  isAdmin: (session: Session | null) => Promise<boolean>,
-  userId: string,
-): Promise<User | UnauthorizedResponse> {
+export async function deleteUser(userId: string): Promise<User | UnauthorizedResponse> {
   const session = await auth();
   if (!(await isAdmin(session))) {
     return { error: "Unauthorized" }

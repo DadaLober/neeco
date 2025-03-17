@@ -10,61 +10,70 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Department {
+  id   String @id @default(cuid())
+  name String @unique
+
+  users     User[]
+  documents Documents[]
+}
+
 model User {
   id           String  @id @default(cuid())
   name         String
   email        String  @unique
   password     String
-  role         String
+  role         String // "ADMIN" or "USER"
   image        String?
   is2FAEnabled Boolean @default(false)
   twoFASecret  String?
 
-departmentId String?
+  departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
-  approvalRoleId String?  
-  approvalRole   ApprovalRole? @relation(fields: [approvalRoleId], references: [id], onDelete: SetNull)
+  approvalRoleId String?
+  approvalRole   ApprovalRole? @relation(fields: [approvalRoleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  //tracking
-  isActive      Boolean   @default(true)
+  isActive      Boolean        @default(true)
   lastLogin     DateTime?
-  loginAttempts Int       @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  loginAttempts Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  ApprovalStep  ApprovalStep[]
 }
 
 model Documents {
-  id          String   @id @default(cuid())
-  referenceNo String   @unique
-  itemType    String
-  itemStatus  String
-  purpose     String
-  supplier    String
-  oic         Boolean  @default(false)
-  date        DateTime
-  departmentId String
-  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  id             String     @id @default(cuid())
+  referenceNo    String     @unique
+  documentType   String
+  documentStatus String
+  purpose        String
+  supplier       String
+  oic            Boolean    @default(false)
+  date           DateTime
+  departmentId   String
+  department     Department @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   approvalSteps ApprovalStep[]
 }
 
 model ApprovalRole {
-  id       String  @id @default(cuid())
-  name     String  @unique
-  sequence Int     @unique  
-  users    User[]
+  id           String         @id @default(cuid())
+  name         String         @unique
+  sequence     Int            @unique
+  users        User[]
+  ApprovalStep ApprovalStep[]
 }
 
 model ApprovalStep {
-  id         String     @id @default(cuid())
+  id         String    @id @default(cuid())
   documentId String
   roleId     String
-  userId     String?    
-  status     String     @default("pending") // "pending", "approved", "rejected"
+  userId     String?
+  status     String    @default("pending") // "pending", "approved", "rejected"
   approvedAt DateTime?
 
-  document   Documents  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  role       ApprovalRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  user       User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  document Documents    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  role     ApprovalRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user     User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
 }

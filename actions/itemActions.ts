@@ -4,12 +4,12 @@ import { z } from 'zod';
 import { auth } from '@/auth';
 import { IdSchema } from '@/schemas';
 import { isUserOrAdmin } from './roleActions';
-import { Item, UnauthorizedResponse } from '@/schemas/types';
-import { deleteItemInDB, getAllItemsFromDB, toggleItemOICInDB, updateItemStatusInDB } from './databaseActions';
+import { Documents, UnauthorizedResponse } from '@/schemas/types';
+import { deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentsStatusInDB } from './databaseActions';
 
 const statusSchema = z.string().min(1).max(50);
 
-export async function getAllItems(): Promise<Item[] | UnauthorizedResponse> {
+export async function getAllDocuments(): Promise<Documents[] | UnauthorizedResponse> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
@@ -17,70 +17,70 @@ export async function getAllItems(): Promise<Item[] | UnauthorizedResponse> {
     }
 
     try {
-        return getAllItemsFromDB();
+        return getAllDocumentsFromDB();
     } catch (error) {
-        return { error: "Error fetching items" };
+        return { error: "Error fetching documents" };
     }
 }
 
-export async function updateItemStatus(itemId: string, newStatus: string): Promise<Item | UnauthorizedResponse> {
+export async function updateDocumentsStatus(documentId: string, newStatus: string): Promise<Documents | UnauthorizedResponse> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
         return { error: "Unauthorized" };
     }
 
-    const validItemId = IdSchema.safeParse(itemId);
+    const validDocumentsId = IdSchema.safeParse(documentId);
     const validStatus = statusSchema.safeParse(newStatus);
 
-    if (!validItemId.success || !validStatus.success) {
-        return { error: "Invalid item ID or status" };
+    if (!validDocumentsId.success || !validStatus.success) {
+        return { error: "Invalid document ID or status" };
     }
 
     try {
-        return updateItemStatusInDB(itemId, newStatus);
+        return updateDocumentsStatusInDB(documentId, newStatus);
     } catch (error) {
-        return { error: "Error updating item status" };
+        return { error: "Error updating document status" };
     }
 }
 
-export async function toggleItemOIC(itemId: string): Promise<Item | UnauthorizedResponse> {
+export async function toggleDocumentsOIC(documentId: string): Promise<Documents | UnauthorizedResponse> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
         return { error: "Unauthorized" };
     }
 
-    const validItemId = IdSchema.safeParse(itemId);
+    const validDocumentsId = IdSchema.safeParse(documentId);
 
-    if (!validItemId.success) {
-        return { error: "Invalid item ID" };
+    if (!validDocumentsId.success) {
+        return { error: "Invalid document ID" };
     }
 
     try {
-        return toggleItemOICInDB(itemId);
+        return toggleDocumentsOICInDB(documentId);
     } catch (error) {
-        return { error: "Error toggling item OIC" };
+        return { error: "Error toggling document OIC" };
     }
 }
 
-export async function deleteItem(itemId: string): Promise<Item | UnauthorizedResponse> {
+export async function deleteDocuments(documentId: string): Promise<Documents | UnauthorizedResponse> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
         return { error: "Unauthorized" };
     }
 
-    const validItemId = IdSchema.safeParse(itemId);
+    const validDocumentsId = IdSchema.safeParse(documentId);
 
-    if (!validItemId.success) {
-        throw new Error('Invalid item ID');
+    if (!validDocumentsId.success) {
+        throw new Error('Invalid document ID');
     }
 
     try {
-        return deleteItemInDB(itemId);
+        return deleteDocumentsInDB(documentId);
     } catch (error) {
-        return { error: "Error deleting item" };
+        return { error: "Error deleting document" };
     }
 }
 

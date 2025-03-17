@@ -7,18 +7,11 @@ export function validateRole(role: string): string | null {
 
 export const UserRoleSchema = z.enum(['USER', 'ADMIN']);
 export const IdSchema = z.string().cuid()
-
-export const ItemTypeSchema = z.enum(['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',
-    'PO', 'RET', 'RM', 'RR', 'RS', 'RV', 'SA', 'SOP', 'ST', 'TMZ', 'TO', 'TOA']);
-export const ItemStatusSchema = z.enum(['APP', 'AUD', 'CHK', 'CON', 'FPO', 'NOC', 'NOT', 'PRV', 'RCV', 'REC', 'REQ', 'VER']);
 export const otpSchema = z.string().length(6).regex(/^[0-9]+$/);
-export const UserStatusSchema = z.boolean();
-
 export const loginSchema = z.object({
     email: z.string().email("Invalid email address"),
     password: z.string().min(1, "Password is required"),
 })
-
 export const registerSchema = z.object({
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Invalid email address"),
@@ -33,3 +26,8 @@ export const registerSchema = z.object({
     message: "Passwords don't match",
     path: ["confirmPassword"],
 })
+
+// export const ItemTypeSchema = z.enum(['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',
+//     'PO', 'RET', 'RM', 'RR', 'RS', 'RV', 'SA', 'SOP', 'ST', 'TMZ', 'TO', 'TOA']);
+// export const ItemStatusSchema = z.enum(['APP', 'AUD', 'CHK', 'CON', 'FPO', 'NOC', 'NOT', 'PRV', 'RCV', 'REC', 'REQ', 'VER']);
+// export const UserStatusSchema = z.boolean();
