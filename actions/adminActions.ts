@@ -1,12 +1,13 @@
 'use server'
 
 import { auth } from '@/auth';
+import { User } from '@prisma/client';
 import { IdSchema, validateRole } from '@/schemas';
-import { UnauthorizedResponse, User } from '@/schemas/types';
+import { UnauthorizedResponse } from '@/schemas/types';
 import { deleteUserFromDB, getAllUsersFromDB, setRoleInDB } from './databaseActions';
 import { isAdmin } from './roleActions';
 
-export async function getAllUsers(): Promise<User[] | UnauthorizedResponse> {
+export async function getAllUsers(): Promise<Partial<User>[] | UnauthorizedResponse> {
   const session = await auth();
   if (!(await isAdmin(session))) {
     return { error: "Unauthorized" }

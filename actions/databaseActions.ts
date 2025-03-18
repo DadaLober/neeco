@@ -1,21 +1,36 @@
 import { prisma } from '@/lib/prisma';
-import { Documents, UnauthorizedResponse, User } from '@/schemas/types';
+import { Documents, UnauthorizedResponse } from '@/schemas/types';
+import { User } from '@prisma/client';
 
 //Database functions
-
-export async function getAllUsersFromDB(): Promise<User[]> {
+export async function getAllUsersFromDB(): Promise<Partial<User>[]> {
     return await prisma.user.findMany({
         select: {
             id: true,
             name: true,
             email: true,
             role: true,
-            isActive: true,
             lastLogin: true,
             loginAttempts: true,
-        },
+            image: true,
+            department: {
+                select: {
+                    id: true,
+                    name: true,
+                }
+            },
+            approvalRole: {
+                select: {
+                    id: true,
+                    name: true,
+                    sequence: true,
+                }
+            }
+        }
     })
 }
+
+
 
 export async function deleteUserFromDB(userId: string): Promise<User> {
     return await prisma.user.delete({

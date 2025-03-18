@@ -1,16 +1,16 @@
 import { TwoFactorVerification } from "@/components/auth/two-factor"
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import { isUserOrAdmin } from "@/actions/roleActions"
 
 export default async function TwoFactorAuthPage() {
     const session = await auth()
 
-    if (!session?.user) {
-        redirect("/login")
+    if (!(await isUserOrAdmin(session)) || !session) {
+        redirect('/login')
     }
-
-    if (!session.user.is2FAEnabled) {
-        redirect("/dashboard")
+    if (session.user.is2FAEnabled) {
+        redirect('/dashboard')
     }
 
     return (

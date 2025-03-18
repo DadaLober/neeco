@@ -1,12 +1,18 @@
 import { getAllUsers } from "@/actions/adminActions"
+import { isAdmin } from "@/actions/roleActions";
+import { auth } from "@/auth";
 import AccessDeniedPage from "@/components/admin/access-denied"
 import { UsersTable } from "@/components/admin/users-table"
-import { UnauthorizedResponse } from "@/schemas/types"
-import { User } from "@/schemas/types"
 
 
 export default async function UsersPage() {
-  const data: User[] | UnauthorizedResponse = await getAllUsers()
+  const session = await auth();
+
+  if (!(await isAdmin(session) || !session)) {
+    return <AccessDeniedPage />
+  }
+
+  const data = await getAllUsers()
 
   if ('error' in data) {
     return <AccessDeniedPage />
@@ -20,7 +26,7 @@ export default async function UsersPage() {
       role: "USER",
       isActive: true,
       lastLogin: new Date(),
-      loginAttempts: 0,
+      loginAttempts: 0
     },
     {
       id: "2",
@@ -29,7 +35,7 @@ export default async function UsersPage() {
       role: "ADMIN",
       isActive: true,
       lastLogin: new Date(),
-      loginAttempts: 0,
+      loginAttempts: 0
     }
     ,
     {
@@ -39,7 +45,7 @@ export default async function UsersPage() {
       role: "USER",
       isActive: true,
       lastLogin: new Date(),
-      loginAttempts: 0,
+      loginAttempts: 0
     },
     {
       id: "4",
@@ -48,7 +54,7 @@ export default async function UsersPage() {
       role: "USER",
       isActive: true,
       lastLogin: new Date(),
-      loginAttempts: 0,
+      loginAttempts: 0
     },
     {
       id: "5",

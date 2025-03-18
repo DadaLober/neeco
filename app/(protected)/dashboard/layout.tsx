@@ -8,13 +8,18 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
+      {/* Header remains fixed */}
       <Header session={session} />
-      <div className="flex flex-1">
+
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1">
-          <div className="flex flex-col">
+
+        {/* Main section is scrollable */}
+        <main className="flex-1 overflow-auto">
+          <div className="p-6">
             {children}
           </div>
         </main>

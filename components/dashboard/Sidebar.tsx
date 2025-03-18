@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   Menu,
   HelpCircle,
+  File
 } from "lucide-react";
 
 // UI Component imports
@@ -36,10 +37,15 @@ const sidebarLinks = [
     icon: LayoutDashboard,
   },
   {
+    title: "Documents",
+    href: "/dashboard/Documents",
+    icon: File,
+  },
+  {
     title: "Users",
     href: "/dashboard/users",
     icon: Users,
-  }
+  },
 ];
 
 interface SidebarContentProps {
