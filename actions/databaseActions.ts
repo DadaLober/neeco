@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import { UnauthorizedResponse } from '@/schemas/types';
-import { User, Documents, Department } from '@prisma/client';
+import { UnauthorizedResponse } from '@/schemas';
+import { User, Documents } from '@prisma/client';
 
 //Database functions
 export async function getAllUsersFromDB(): Promise<Partial<User>[]> {
@@ -29,8 +29,6 @@ export async function getAllUsersFromDB(): Promise<Partial<User>[]> {
         }
     })
 }
-
-
 
 export async function deleteUserFromDB(userId: string): Promise<User> {
     return await prisma.user.delete({

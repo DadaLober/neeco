@@ -3,7 +3,6 @@
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -17,6 +16,7 @@ import {
     SortDesc,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 export type Column<T> = {
     header: string
@@ -193,32 +193,28 @@ export function CardTable<T extends Record<string, any>>({
                                         ))}
                                         {rowActions && (
                                             <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                        >
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-" onClick={(e) => e.stopPropagation()}>
                                                             <MoreHorizontal className="h-4 w-4" />
-                                                            <span className="sr-only">Open menu</span>
                                                         </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
+                                                    </PopoverTrigger>
+                                                    <PopoverContent align="end" className="w-36 p-1">
                                                         {rowActions.map((action, actionIndex) => (
-                                                            <DropdownMenuItem
+                                                            <Button
                                                                 key={actionIndex}
+                                                                variant="ghost"
+                                                                className="w-full text-sm px-2 py-1.5 justify-center"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation()
                                                                     action.onClick(item)
                                                                 }}
                                                             >
                                                                 {action.label}
-                                                            </DropdownMenuItem>
+                                                            </Button>
                                                         ))}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                    </PopoverContent>
+                                                </Popover>
                                             </TableCell>
                                         )}
                                     </TableRow>
@@ -254,57 +250,58 @@ export function CardTable<T extends Record<string, any>>({
                                         ))}
                                     </div>
                                 </CardContent>
+
                                 {rowActions && (
                                     <CardFooter className="flex justify-end p-2 pt-0 border-t">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="sm" className="h-8" onClick={(e) => e.stopPropagation()}>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
                                                     Actions <MoreHorizontal className="ml-2 h-4 w-4" />
                                                 </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                {rowActions.map((action, actionIndex) => (
-                                                    <DropdownMenuItem
-                                                        key={actionIndex}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            action.onClick(item)
-                                                        }}
-                                                    >
-                                                        {action.label}
-                                                    </DropdownMenuItem>
-                                                ))}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                            </PopoverTrigger>
+                                            <PopoverContent align="end" className="w-40 p-2">
+                                                <div className="flex flex-col space-y-2">
+                                                    {rowActions.map((action, actionIndex) => (
+                                                        <Button
+                                                            key={actionIndex}
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="justify-start w-full"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                action.onClick(item)
+                                                            }}
+                                                        >
+                                                            {action.label}
+                                                        </Button>
+                                                    ))}
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>
                                     </CardFooter>
                                 )}
                             </Card>
                         ))
                     )}
                 </div>
+
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="text-sm text-muted-foreground">
-                        Page {page} of {totalPages}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => goToPage(1)} disabled={page === 1}>
-                            <ChevronsLeft className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => goToPage(page - 1)} disabled={page === 1}>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => goToPage(page + 1)} disabled={page === totalPages}>
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => goToPage(totalPages)} disabled={page === totalPages}>
-                            <ChevronsRight className="h-4 w-4" />
-                        </Button>
+                <CardFooter className="flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">Page {page} of {totalPages}</div>
+                    <div className="flex space-x-2">
+                        <Button onClick={() => goToPage(1)} disabled={page === 1}><ChevronsLeft /></Button>
+                        <Button onClick={() => goToPage(page - 1)} disabled={page === 1}><ChevronLeft /></Button>
+                        <Button onClick={() => goToPage(page + 1)} disabled={page === totalPages}><ChevronRight /></Button>
+                        <Button onClick={() => goToPage(totalPages)} disabled={page === totalPages}><ChevronsRight /></Button>
                     </div>
                 </CardFooter>
             )}
         </Card>
     )
 }
-

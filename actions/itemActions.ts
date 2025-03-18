@@ -2,9 +2,8 @@
 
 import { z } from 'zod';
 import { auth } from '@/auth';
-import { IdSchema } from '@/schemas';
+import { IdSchema, UnauthorizedResponse } from '@/schemas';
 import { isUserOrAdmin } from './roleActions';
-import { UnauthorizedResponse } from '@/schemas/types';
 import { deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './databaseActions';
 import { Documents } from '@prisma/client';
 

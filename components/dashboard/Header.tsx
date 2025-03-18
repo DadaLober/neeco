@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // Custom hooks and components
 import { UserSettingsDialog } from './UserSettingsDialog';
 import { ProfileDialog } from './ProfileDialog';
-import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
+import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 
 type HeaderProps = {
   session: Session | null;

@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+export type UnauthorizedResponse = { error: string }
+
 export function validateRole(role: string): string | null {
     const parsedRole = UserRoleSchema.safeParse(role);
     return parsedRole.success ? parsedRole.data : null;

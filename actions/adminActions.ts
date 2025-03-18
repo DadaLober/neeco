@@ -2,8 +2,7 @@
 
 import { auth } from '@/auth';
 import { User } from '@prisma/client';
-import { IdSchema, validateRole } from '@/schemas';
-import { UnauthorizedResponse } from '@/schemas/types';
+import { IdSchema, validateRole, UnauthorizedResponse } from '@/schemas';
 import { deleteUserFromDB, getAllUsersFromDB, setRoleInDB } from './databaseActions';
 import { isAdmin } from './roleActions';
 

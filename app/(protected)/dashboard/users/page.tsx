@@ -1,8 +1,9 @@
-import { getAllUsers } from "@/actions/adminActions"
+import { getAllUsers, deleteUser } from "@/actions/adminActions"
 import { isAdmin } from "@/actions/roleActions";
 import { auth } from "@/auth";
 import AccessDeniedPage from "@/components/admin/access-denied"
 import { UsersTable } from "@/components/admin/users-table"
+import { revalidatePath } from "next/cache";
 
 
 export default async function UsersPage() {
@@ -14,65 +15,45 @@ export default async function UsersPage() {
 
   const data = await getAllUsers()
 
+  const mockData = [{
+    id: "1",
+    name: "John Doe",
+    email: "john@example.com",
+    role: "ADMIN",
+    lastLogin: new Date(),
+    loginAttempts: 0,
+    approvalRole: {
+      id: "2",
+      name: "Department Manager",
+      sequence: 2
+    },
+    department: {
+      id: "2",
+      name: "TSD"
+    },
+  }
+  ]
+
   if ('error' in data) {
     return <AccessDeniedPage />
   }
 
-  const data2 = [
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      role: "USER",
-      isActive: true,
-      lastLogin: new Date(),
-      loginAttempts: 0
-    },
-    {
-      id: "2",
-      name: "Jane Doe",
-      email: "jane@example.com",
-      role: "ADMIN",
-      isActive: true,
-      lastLogin: new Date(),
-      loginAttempts: 0
-    }
-    ,
-    {
-      id: "3",
-      name: "Bob Smith",
-      email: "bob@example.com",
-      role: "USER",
-      isActive: true,
-      lastLogin: new Date(),
-      loginAttempts: 0
-    },
-    {
-      id: "4",
-      name: "Alice Johnson",
-      email: "alice@example.com",
-      role: "USER",
-      isActive: true,
-      lastLogin: new Date(),
-      loginAttempts: 0
-    },
-    {
-      id: "5",
-      name: "Charlie Brown",
-      email: "charlie@example.com",
-      role: "USER",
-      isActive: true,
-      lastLogin: new Date(),
-      loginAttempts: 0,
-    },
-  ]
+  const combinedData = [...data, ...mockData]
 
-  const combinedData = [...data, ...data2]
+  const handleDelete = async (userId: string) => {
+    "use server";
+    try {
+      await deleteUser(userId)
+      revalidatePath("/dashboard/users")
+    } catch (error) {
+      console.error("Error deleting user:", error)
+    }
+  }
 
   return (
     <main className="flex flex-col">
       <div className="flex">
-        <UsersTable users={combinedData} />
+        <UsersTable users={combinedData} deleteAction={handleDelete} />
       </div>
     </main>
   )

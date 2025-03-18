@@ -61,15 +61,12 @@ export function LoginForm() {
             }
 
             if (result.requires2FA) {
-                // Redirect to 2FA verification page, passing the callback URL
                 router.push(`verify-otp/?callbackUrl=${encodeURIComponent(result.callbackUrl || "")}`)
                 return
             }
 
-            // Normal login success - redirect
-            if (result.callbackUrl) {
-                router.push(result.callbackUrl)
-            }
+            router.push(result.callbackUrl)
+
         } catch (error) {
             console.error("Login error:", error)
             setError("An unexpected error occurred")

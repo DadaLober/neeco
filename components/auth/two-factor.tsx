@@ -44,7 +44,7 @@ export function TwoFactorVerification() {
                     return
                 }
 
-                router.push(loginResult.redirectUrl || "/dashboard")
+                router.push(loginResult.callbackUrl || "/dashboard")
 
             } else {
                 setError("Invalid verification code. Please try again.")
