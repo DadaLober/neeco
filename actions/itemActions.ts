@@ -4,23 +4,20 @@ import { z } from 'zod';
 import { auth } from '@/auth';
 import { IdSchema } from '@/schemas';
 import { isUserOrAdmin } from './roleActions';
-import { Documents, UnauthorizedResponse } from '@/schemas/types';
+import { UnauthorizedResponse } from '@/schemas/types';
 import { deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './databaseActions';
+import { Documents } from '@prisma/client';
 
 const statusSchema = z.string().min(1).max(50);
 
-export async function getAllDocuments(): Promise<Documents[] | UnauthorizedResponse> {
+export async function getAllDocuments(): Promise<Partial<Documents>[] | UnauthorizedResponse> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
         return { error: "Unauthorized" };
     }
 
-    try {
-        return getAllDocumentsFromDB();
-    } catch (error) {
-        return { error: "Error fetching documents" };
-    }
+    return getAllDocumentsFromDB();
 }
 
 export async function updateDocumentStatus(documentId: string, newStatus: string): Promise<Documents | UnauthorizedResponse> {
@@ -37,11 +34,7 @@ export async function updateDocumentStatus(documentId: string, newStatus: string
         return { error: "Invalid document ID or status" };
     }
 
-    try {
-        return updateDocumentStatusInDB(documentId, newStatus);
-    } catch (error) {
-        return { error: "Error updating document status" };
-    }
+    return updateDocumentStatusInDB(documentId, newStatus);
 }
 
 export async function toggleDocumentsOIC(documentId: string): Promise<Documents | UnauthorizedResponse> {
@@ -57,11 +50,7 @@ export async function toggleDocumentsOIC(documentId: string): Promise<Documents 
         return { error: "Invalid document ID" };
     }
 
-    try {
-        return toggleDocumentsOICInDB(documentId);
-    } catch (error) {
-        return { error: "Error toggling document OIC" };
-    }
+    return toggleDocumentsOICInDB(documentId);
 }
 
 export async function deleteDocuments(documentId: string): Promise<Documents | UnauthorizedResponse> {
@@ -77,10 +66,6 @@ export async function deleteDocuments(documentId: string): Promise<Documents | U
         throw new Error('Invalid document ID');
     }
 
-    try {
-        return deleteDocumentsInDB(documentId);
-    } catch (error) {
-        return { error: "Error deleting document" };
-    }
+    return deleteDocumentsInDB(documentId);
 }
 

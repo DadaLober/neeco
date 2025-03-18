@@ -38,7 +38,7 @@ const sidebarLinks = [
   },
   {
     title: "Documents",
-    href: "/dashboard/Documents",
+    href: "/dashboard/documents",
     icon: File,
   },
   {

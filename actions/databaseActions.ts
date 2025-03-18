@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
-import { Documents, UnauthorizedResponse } from '@/schemas/types';
-import { User } from '@prisma/client';
+import { UnauthorizedResponse } from '@/schemas/types';
+import { User, Documents, Department } from '@prisma/client';
 
 //Database functions
 export async function getAllUsersFromDB(): Promise<Partial<User>[]> {
@@ -82,7 +82,7 @@ export async function createUserInDB(name: string, email: string, role: string, 
     });
 }
 
-export async function getAllDocumentsFromDB() {
+export async function getAllDocumentsFromDB(): Promise<Partial<Documents>[]> {
     return await prisma.documents.findMany({
         select: {
             id: true,
@@ -93,6 +93,13 @@ export async function getAllDocumentsFromDB() {
             supplier: true,
             oic: true,
             date: true,
+            departmentId: true,
+            department: {
+                select: {
+                    id: true,
+                    name: true,
+                }
+            },
         },
         orderBy: { date: 'desc' }
     });
