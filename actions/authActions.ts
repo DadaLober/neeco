@@ -43,7 +43,7 @@ export async function login(values: LoginInput):
                     secure: process.env.NODE_ENV === "production",
                     sameSite: "strict",
                     path: "/",
-                    maxAge: 60 * 15 // 15 minutes
+                    maxAge: 60 * 15 // 15 minutes,
                 });
                 return {
                     success: true,
@@ -76,7 +76,7 @@ export async function login(values: LoginInput):
     }
 }
 
-export async function complete2FALogin(): Promise<{ success: true, callbackUrl: string } | UnauthorizedResponse> {
+export async function complete2FALogin(): Promise<{ callbackUrl: string } | UnauthorizedResponse> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
@@ -92,10 +92,10 @@ export async function complete2FALogin(): Promise<{ success: true, callbackUrl: 
         return { error: "Something went wrong" };
     }
 
-    return { success: true, callbackUrl: redirectUrl };
+    return { callbackUrl: redirectUrl };
 }
 
-export async function register(values: RegisterInput): Promise<{ success: true, callbackUrl: string } | UnauthorizedResponse> {
+export async function register(values: RegisterInput): Promise<{ callbackUrl: string } | UnauthorizedResponse> {
     const result = registerSchema.safeParse(values);
 
     if (!result.success) {
@@ -116,7 +116,7 @@ export async function register(values: RegisterInput): Promise<{ success: true, 
 
         await createUserInDB(values.name, values.email, defaultRole, hashedPassword);
 
-        return { success: true, callbackUrl: redirectUrl };
+        return { callbackUrl: redirectUrl };
     } catch (error) {
         return { error: "Something went wrong" };
     }

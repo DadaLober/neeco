@@ -98,7 +98,7 @@ export async function toggleDocumentsOICInDB(documentsId: string): Promise<Docum
     });
 }
 
-export async function updateDocumentsStatusInDB(documentsId: string, newStatus: string): Promise<Documents> {
+export async function updateDocumentStatusInDB(documentsId: string, newStatus: string): Promise<Documents> {
     return await prisma.documents.update({
         where: { id: documentsId },
         data: { documentStatus: newStatus }

@@ -5,7 +5,7 @@ import { auth } from '@/auth';
 import { IdSchema } from '@/schemas';
 import { isUserOrAdmin } from './roleActions';
 import { Documents, UnauthorizedResponse } from '@/schemas/types';
-import { deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentsStatusInDB } from './databaseActions';
+import { deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './databaseActions';
 
 const statusSchema = z.string().min(1).max(50);
 
@@ -23,7 +23,7 @@ export async function getAllDocuments(): Promise<Documents[] | UnauthorizedRespo
     }
 }
 
-export async function updateDocumentsStatus(documentId: string, newStatus: string): Promise<Documents | UnauthorizedResponse> {
+export async function updateDocumentStatus(documentId: string, newStatus: string): Promise<Documents | UnauthorizedResponse> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
@@ -38,7 +38,7 @@ export async function updateDocumentsStatus(documentId: string, newStatus: strin
     }
 
     try {
-        return updateDocumentsStatusInDB(documentId, newStatus);
+        return updateDocumentStatusInDB(documentId, newStatus);
     } catch (error) {
         return { error: "Error updating document status" };
     }

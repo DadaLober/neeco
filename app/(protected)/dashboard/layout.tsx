@@ -13,8 +13,8 @@ export default async function DashboardLayout({
       <Header session={session} />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 ">
-          <div className="container mx-auto">
+        <main className="flex-1">
+          <div className="flex flex-col">
             {children}
           </div>
         </main>
