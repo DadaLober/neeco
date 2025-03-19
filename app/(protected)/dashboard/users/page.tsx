@@ -15,30 +15,9 @@ export default async function UsersPage() {
 
   const data = await getAllUsers()
 
-  const mockData = [{
-    id: "1",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "ADMIN",
-    lastLogin: new Date(),
-    loginAttempts: 0,
-    approvalRole: {
-      id: "2",
-      name: "Department Manager",
-      sequence: 2
-    },
-    department: {
-      id: "2",
-      name: "TSD"
-    },
-  }
-  ]
-
   if ('error' in data) {
     return <AccessDeniedPage />
   }
-
-  const combinedData = [...data, ...mockData]
 
   const handleDelete = async (userId: string) => {
     "use server";
@@ -53,7 +32,7 @@ export default async function UsersPage() {
   return (
     <main className="flex flex-col">
       <div className="flex">
-        <UsersTable users={combinedData} deleteAction={handleDelete} />
+        <UsersTable users={data} deleteAction={handleDelete} />
       </div>
     </main>
   )

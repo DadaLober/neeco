@@ -18,10 +18,8 @@ export default async function DashboardLayout({
         <Sidebar />
 
         {/* Main section is scrollable */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-6">
-            {children}
-          </div>
+        <main className="flex-1 h-screen overflow-auto">
+          {children}
         </main>
       </div>
     </div>
