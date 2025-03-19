@@ -1,11 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import { CardTable } from "@/components/ui/card-table"
-import { User, Department, ApprovalRole } from "@prisma/client"
+import type { User, Department, ApprovalRole } from "@prisma/client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"
-import { useDialog } from "@/hooks/use-dialog"
 import { toast } from "sonner"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export type UserWithRelations = Partial<User> & {
     department?: Department | null
@@ -15,48 +16,90 @@ export type UserWithRelations = Partial<User> & {
 type UsersTableProps = {
     users: UserWithRelations[]
     deleteAction: (userId: string) => Promise<void>
+    updateAction?: (userId: string, data: Partial<UserWithRelations>) => Promise<void>
+    departments?: Department[]
+    approvalRoles?: ApprovalRole[]
 }
 
-export function UsersTable({ users, deleteAction }: UsersTableProps) {
-    const { config, openDialog, closeDialog, setLoading } = useDialog()
+export function UsersTable({
+    users,
+    deleteAction,
+    updateAction,
+    departments = [],
+    approvalRoles = [],
+}: UsersTableProps) {
+    const roles = ["ADMIN", "USER"]
 
-    const handleDelete = (user: UserWithRelations) => {
-        openDialog({
-            title: "Confirm Deletion",
-            description: (
-                <>
-                    Are you sure you want to delete <strong>{user.name}</strong>? This action cannot be undone.
-                </>
-            ),
-            confirmLabel: "Delete",
-            confirmVariant: "destructive",
-            onConfirm: async () => {
-                if (!user.id) return
+    // State for Delete Dialog
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [userToDelete, setUserToDelete] = useState<UserWithRelations | null>(null)
+    const [isDeleteLoading, setIsDeleteLoading] = useState(false)
 
-                try {
-                    setLoading(true)
-                    await deleteAction(user.id)
-                    toast.success(`User ${user.id} deleted successfully`)
-                } catch (error) {
-                    console.error("Error deleting user:", error)
-                } finally {
-                    closeDialog()
-                }
-            }
-        })
+    // State for Edit Dialog
+    const [editDialogOpen, setEditDialogOpen] = useState(false)
+    const [editedUser, setEditedUser] = useState<UserWithRelations | null>(null)
+
+    // State for Save Confirmation Dialog
+    const [saveDialogOpen, setSaveDialogOpen] = useState(false)
+    const [isSaveLoading, setIsSaveLoading] = useState(false)
+
+    // Handle Delete
+    const handleDeleteClick = (user: UserWithRelations) => {
+        setUserToDelete(user)
+        setDeleteDialogOpen(true)
     }
 
-    const handleEdit = (user: UserWithRelations) => {
-        openDialog({
-            title: "Edit User",
-            description: `Do you want to edit ${user.name}?`,
-            confirmLabel: "Edit",
-            confirmVariant: "default",
-            onConfirm: async () => {
-                console.log(`Editing user ${user.id}`)
-                closeDialog()
-            }
+    const handleDeleteConfirm = async () => {
+        if (!userToDelete?.id) return
+
+        setIsDeleteLoading(true)
+        try {
+            await deleteAction(userToDelete.id)
+            toast.success(`User ${userToDelete.name} deleted successfully`)
+            setDeleteDialogOpen(false)
+        } catch (error) {
+            console.error("Error deleting user:", error)
+            toast.error("Failed to delete user")
+        } finally {
+            setIsDeleteLoading(false)
+        }
+    }
+
+    // Handle Edit
+    const handleEditClick = (user: UserWithRelations) => {
+        setEditedUser({
+            ...user,
+            department: user.department,
+            approvalRole: user.approvalRole
         })
+        setEditDialogOpen(true)
+    }
+
+    const handleEditConfirm = () => {
+        setEditDialogOpen(false)
+        setSaveDialogOpen(true)
+    }
+
+    // Handle Save
+    const handleSaveConfirm = async () => {
+        if (!editedUser?.id || !updateAction) return
+
+        setIsSaveLoading(true)
+        try {
+            await updateAction(editedUser.id, {
+                role: editedUser.role,
+                departmentId: editedUser.departmentId,
+                approvalRoleId: editedUser.approvalRoleId,
+            })
+            toast.success(`User ${editedUser.name} updated successfully`)
+            setSaveDialogOpen(false)
+            setEditedUser(null)
+        } catch (error) {
+            console.error("Error updating user:", error)
+            toast.error("Failed to update user")
+        } finally {
+            setIsSaveLoading(false)
+        }
     }
 
     return (
@@ -77,9 +120,7 @@ export function UsersTable({ users, deleteAction }: UsersTableProps) {
                                     {user.image ? (
                                         <AvatarImage src={user.image} alt={user.name} />
                                     ) : (
-                                        <AvatarFallback className="bg-green-200">
-                                            {user?.name?.[0]?.toUpperCase()}
-                                        </AvatarFallback>
+                                        <AvatarFallback className="bg-green-200">{user?.name?.[0]?.toUpperCase()}</AvatarFallback>
                                     )}
                                 </Avatar>
                             </div>
@@ -103,18 +144,14 @@ export function UsersTable({ users, deleteAction }: UsersTableProps) {
                         header: "Department",
                         accessorKey: "departmentId",
                         cell: (user) => (
-                            <div className="flex items-center gap-2">
-                                {user.department ? user.department.name : "None"}
-                            </div>
+                            <div className="flex items-center gap-2">{user.department ? user.department.name : "None"}</div>
                         ),
                     },
                     {
                         header: "Approval Role",
                         accessorKey: "approvalRoleId",
                         cell: (user) => (
-                            <div className="flex items-center gap-2">
-                                {user.approvalRole ? user.approvalRole.name : "None"}
-                            </div>
+                            <div className="flex items-center gap-2">{user.approvalRole ? user.approvalRole.name : "None"}</div>
                         ),
                     },
                     {
@@ -126,23 +163,137 @@ export function UsersTable({ users, deleteAction }: UsersTableProps) {
                             </div>
                         ),
                     },
-                    { header: "Login Attempts", accessorKey: "loginAttempts" }
+                    { header: "Login Attempts", accessorKey: "loginAttempts" },
                 ]}
                 rowActions={[
-                    { label: "Edit", onClick: handleEdit },
-                    { label: "Delete", onClick: handleDelete },
+                    { label: "Edit", onClick: handleEditClick },
+                    { label: "Delete", onClick: handleDeleteClick },
                 ]}
             />
 
+            {/* Delete Confirmation Dialog */}
             <ConfirmationDialog
-                open={config.open}
-                onOpenChange={(open) => open ? openDialog({}) : closeDialog()}
-                title={config.title}
-                description={config.description}
-                confirmLabel={config.confirmLabel}
-                confirmVariant={config.confirmVariant}
-                onConfirm={config.onConfirm}
-                isLoading={config.isLoading}
+                open={deleteDialogOpen}
+                onOpenChange={setDeleteDialogOpen}
+                title="Confirm Deletion"
+                description={<>Are you sure you want to delete <strong>{userToDelete?.name}</strong>? This action cannot be undone.</>}
+                confirmLabel="Delete"
+                confirmVariant="destructive"
+                onConfirm={handleDeleteConfirm}
+                isLoading={isDeleteLoading}
+            />
+
+            {/* Edit User Dialog */}
+            <ConfirmationDialog
+                open={editDialogOpen}
+                onOpenChange={(open) => {
+                    setEditDialogOpen(open);
+                    if (!open) setEditedUser(null);
+                }}
+                title={`Edit User: ${editedUser?.name}`}
+                description="Update the user's role, department, and approval role."
+                confirmLabel="Save Changes"
+                confirmVariant="default"
+                onConfirm={handleEditConfirm}
+                content={
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Role</label>
+                            <Select
+                                value={editedUser?.role || ""}
+                                onValueChange={(value) => setEditedUser((prev) => (prev ? { ...prev, role: value } : prev))}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {roles.map((role) => (
+                                        <SelectItem key={role} value={role}>
+                                            {role}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Department</label>
+                            <Select
+                                value={editedUser?.department?.id ? String(editedUser.department.id) : "none"}
+                                onValueChange={(value) =>
+                                    setEditedUser((prev) => {
+                                        if (!prev) return prev
+                                        const deptId = value === "none" ? null : Number.parseInt(value, 10)
+                                        const selectedDepartment = deptId ? departments.find((d) => d.id === deptId) || null : null
+                                        return {
+                                            ...prev,
+                                            departmentId: deptId,
+                                            department: selectedDepartment
+                                        }
+                                    })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select department" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    {departments.map((dept) => (
+                                        <SelectItem key={dept.id} value={String(dept.id)}>
+                                            {dept.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium">Approval Role</label>
+                            <Select
+                                value={editedUser?.approvalRole?.id ? String(editedUser.approvalRole.id) : "none"}
+                                onValueChange={(value) =>
+                                    setEditedUser((prev) => {
+                                        if (!prev) return prev
+                                        const roleId = value === "none" ? null : Number.parseInt(value, 10)
+                                        const selectedRole = roleId ? approvalRoles.find((r) => r.id === roleId) || null : null
+                                        return {
+                                            ...prev,
+                                            approvalRoleId: roleId,
+                                            approvalRole: selectedRole
+                                        }
+                                    })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select approval role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    {approvalRoles.map((role) => (
+                                        <SelectItem key={role.id} value={String(role.id)}>
+                                            {role.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                }
+            />
+
+            {/* Save Confirmation Dialog */}
+            <ConfirmationDialog
+                open={saveDialogOpen}
+                onOpenChange={(open) => {
+                    setSaveDialogOpen(open);
+                    if (!open) setEditedUser(null);
+                }}
+                title="Save Changes"
+                description={<> Are you sure you want to save changes to <strong>{editedUser?.name}</strong>? </>}
+                confirmLabel="Save"
+                confirmVariant="default"
+                onConfirm={handleSaveConfirm}
+                isLoading={isSaveLoading}
             />
         </>
     )

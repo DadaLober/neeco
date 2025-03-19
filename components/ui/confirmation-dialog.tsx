@@ -21,6 +21,7 @@ type ConfirmationDialogProps = {
     confirmVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
     onConfirm: () => void
     isLoading?: boolean
+    content?: ReactNode
 }
 
 export function ConfirmationDialog({
@@ -33,6 +34,7 @@ export function ConfirmationDialog({
     confirmVariant = "default",
     onConfirm,
     isLoading = false,
+    content,
 }: ConfirmationDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -43,6 +45,7 @@ export function ConfirmationDialog({
                         {description}
                     </DialogDescription>
                 </DialogHeader>
+                {content}
                 <DialogFooter>
                     <Button
                         variant="outline"

@@ -10,6 +10,7 @@ export function validateRole(role: string): string | null {
 export const UserRoleSchema = z.enum(['USER', 'ADMIN']);
 export const IdSchema = z.string().cuid()
 export const otpSchema = z.string().length(6).regex(/^[0-9]+$/);
+export const numberSchema = z.number().min(1);
 export const loginSchema = z.object({
     email: z.string().email("Invalid email address"),
     password: z.string().min(1, "Password is required"),

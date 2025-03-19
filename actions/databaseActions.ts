@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { UnauthorizedResponse } from '@/schemas';
-import { User, Documents } from '@prisma/client';
+import { User, Documents, Department, ApprovalRole } from '@prisma/client';
 
 //Database functions
 export async function getAllUsersFromDB(): Promise<Partial<User>[]> {
@@ -165,5 +165,31 @@ export function setApprovalRoleInDB(userId: string, approvalRoleId: number): Pro
     return prisma.user.update({
         where: { id: userId },
         data: { approvalRoleId: approvalRoleId }
+    });
+}
+
+export function getAllDepartmentsFromDB(): Promise<Department[]> {
+    return prisma.department.findMany({
+        select: {
+            id: true,
+            name: true,
+        }
+    });
+}
+
+export function getAllApprovalRolesFromDB(): Promise<ApprovalRole[]> {
+    return prisma.approvalRole.findMany({
+        select: {
+            id: true,
+            name: true,
+            sequence: true,
+        }
+    });
+}
+
+export function updateUserInDB(userId: string, data: Partial<User>): Promise<User> {
+    return prisma.user.update({
+        where: { id: userId },
+        data: data
     });
 }
