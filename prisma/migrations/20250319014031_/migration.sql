@@ -1,46 +1,54 @@
-/*
-  Warnings:
-
-  - You are about to drop the `Item` table. If the table is not empty, all the data it contains will be lost.
-
-*/
 BEGIN TRY
 
 BEGIN TRAN;
 
--- AlterTable
-ALTER TABLE [dbo].[User] ADD [approvalRoleId] NVARCHAR(1000),
-[departmentId] NVARCHAR(1000);
-
--- DropTable
-DROP TABLE [dbo].[Item];
-
 -- CreateTable
 CREATE TABLE [dbo].[Department] (
-    [id] NVARCHAR(1000) NOT NULL,
+    [id] INT NOT NULL IDENTITY(1,1),
     [name] NVARCHAR(1000) NOT NULL,
     CONSTRAINT [Department_pkey] PRIMARY KEY CLUSTERED ([id]),
     CONSTRAINT [Department_name_key] UNIQUE NONCLUSTERED ([name])
 );
 
 -- CreateTable
+CREATE TABLE [dbo].[User] (
+    [id] NVARCHAR(1000) NOT NULL,
+    [name] NVARCHAR(1000) NOT NULL,
+    [email] NVARCHAR(1000) NOT NULL,
+    [password] NVARCHAR(1000) NOT NULL,
+    [role] NVARCHAR(1000) NOT NULL,
+    [image] NVARCHAR(1000),
+    [is2FAEnabled] BIT NOT NULL CONSTRAINT [User_is2FAEnabled_df] DEFAULT 0,
+    [twoFASecret] NVARCHAR(1000),
+    [departmentId] INT,
+    [approvalRoleId] INT,
+    [isActive] BIT NOT NULL CONSTRAINT [User_isActive_df] DEFAULT 1,
+    [lastLogin] DATETIME2,
+    [loginAttempts] INT NOT NULL CONSTRAINT [User_loginAttempts_df] DEFAULT 0,
+    [createdAt] DATETIME2 NOT NULL CONSTRAINT [User_createdAt_df] DEFAULT CURRENT_TIMESTAMP,
+    [updatedAt] DATETIME2 NOT NULL,
+    CONSTRAINT [User_pkey] PRIMARY KEY CLUSTERED ([id]),
+    CONSTRAINT [User_email_key] UNIQUE NONCLUSTERED ([email])
+);
+
+-- CreateTable
 CREATE TABLE [dbo].[Documents] (
     [id] NVARCHAR(1000) NOT NULL,
     [referenceNo] NVARCHAR(1000) NOT NULL,
-    [itemType] NVARCHAR(1000) NOT NULL,
-    [itemStatus] NVARCHAR(1000) NOT NULL,
+    [documentType] NVARCHAR(1000) NOT NULL,
+    [documentStatus] NVARCHAR(1000) NOT NULL,
     [purpose] NVARCHAR(1000) NOT NULL,
     [supplier] NVARCHAR(1000) NOT NULL,
     [oic] BIT NOT NULL CONSTRAINT [Documents_oic_df] DEFAULT 0,
     [date] DATETIME2 NOT NULL,
-    [departmentId] NVARCHAR(1000) NOT NULL,
+    [departmentId] INT,
     CONSTRAINT [Documents_pkey] PRIMARY KEY CLUSTERED ([id]),
     CONSTRAINT [Documents_referenceNo_key] UNIQUE NONCLUSTERED ([referenceNo])
 );
 
 -- CreateTable
 CREATE TABLE [dbo].[ApprovalRole] (
-    [id] NVARCHAR(1000) NOT NULL,
+    [id] INT NOT NULL IDENTITY(1,1),
     [name] NVARCHAR(1000) NOT NULL,
     [sequence] INT NOT NULL,
     CONSTRAINT [ApprovalRole_pkey] PRIMARY KEY CLUSTERED ([id]),
@@ -52,7 +60,7 @@ CREATE TABLE [dbo].[ApprovalRole] (
 CREATE TABLE [dbo].[ApprovalStep] (
     [id] NVARCHAR(1000) NOT NULL,
     [documentId] NVARCHAR(1000) NOT NULL,
-    [roleId] NVARCHAR(1000) NOT NULL,
+    [roleId] INT NOT NULL,
     [userId] NVARCHAR(1000),
     [status] NVARCHAR(1000) NOT NULL CONSTRAINT [ApprovalStep_status_df] DEFAULT 'pending',
     [approvedAt] DATETIME2,

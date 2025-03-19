@@ -3,7 +3,7 @@
 import { auth } from '@/auth';
 import { User } from '@prisma/client';
 import { IdSchema, validateRole, UnauthorizedResponse } from '@/schemas';
-import { deleteUserFromDB, getAllUsersFromDB, setRoleInDB } from './databaseActions';
+import { deleteUserFromDB, getAllUsersFromDB, setApprovalRoleInDB, setDepartmentInDB, setRoleInDB } from './databaseActions';
 import { isAdmin } from './roleActions';
 
 export async function getAllUsers(): Promise<Partial<User>[] | UnauthorizedResponse> {
@@ -41,4 +41,32 @@ export async function deleteUser(userId: string): Promise<User | UnauthorizedRes
   }
 
   return await deleteUserFromDB(userId);
+}
+
+export async function setDepartment(userId: string, departmentId: number): Promise<User | UnauthorizedResponse> {
+  const session = await auth();
+  if (!(await isAdmin(session))) {
+    return { error: "Unauthorized" }
+  }
+  const parsedId = IdSchema.safeParse(userId);
+
+  if (!parsedId.success) {
+    return { error: "Invalid department ID" };
+  }
+
+  return await setDepartmentInDB(userId, departmentId);
+}
+
+export async function setApprovalRole(userId: string, approvalRoleId: number): Promise<User | UnauthorizedResponse> {
+  const session = await auth();
+  if (!(await isAdmin(session))) {
+    return { error: "Unauthorized" }
+  }
+  const parsedId = IdSchema.safeParse(userId);
+
+  if (!parsedId.success) {
+    return { error: "Invalid approval role ID" };
+  }
+
+  return await setApprovalRoleInDB(userId, approvalRoleId);
 }

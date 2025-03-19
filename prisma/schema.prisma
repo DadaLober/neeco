@@ -11,7 +11,7 @@ generator client {
 }
 
 model Department {
-  id   String @id @default(cuid())
+  id   Int    @id @default(autoincrement())
   name String @unique
 
   users     User[]
@@ -28,10 +28,10 @@ model User {
   is2FAEnabled Boolean @default(false)
   twoFASecret  String?
 
-  departmentId String?
+  departmentId Int?
   department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
-  approvalRoleId String?
+  approvalRoleId Int?
   approvalRole   ApprovalRole? @relation(fields: [approvalRoleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   isActive      Boolean        @default(true)
@@ -51,14 +51,14 @@ model Documents {
   supplier       String
   oic            Boolean     @default(false)
   date           DateTime
-  departmentId   String?
+  departmentId   Int?
   department     Department? @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   approvalSteps ApprovalStep[]
 }
 
 model ApprovalRole {
-  id           String         @id @default(cuid())
+  id           Int            @id @default(autoincrement())
   name         String         @unique
   sequence     Int            @unique
   users        User[]
@@ -68,7 +68,7 @@ model ApprovalRole {
 model ApprovalStep {
   id         String    @id @default(cuid())
   documentId String
-  roleId     String
+  roleId     Int
   userId     String?
   status     String    @default("pending") // "pending", "approved", "rejected"
   approvedAt DateTime?

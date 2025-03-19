@@ -153,3 +153,17 @@ export function disable2FAInDB(userId: string): Promise<User> {
         data: { is2FAEnabled: false, twoFASecret: null },
     });
 }
+
+export function setDepartmentInDB(userId: string, departmentId: number): Promise<User> {
+    return prisma.user.update({
+        where: { id: userId },
+        data: { departmentId: departmentId }
+    });
+}
+
+export function setApprovalRoleInDB(userId: string, approvalRoleId: number): Promise<User> {
+    return prisma.user.update({
+        where: { id: userId },
+        data: { approvalRoleId: approvalRoleId }
+    });
+}

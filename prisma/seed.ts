@@ -7,22 +7,22 @@ async function main() {
     // Departments
     await prisma.department.createMany({
         data: [
-            { id: "1", name: 'CITET' },
-            { id: "2", name: 'IAD' },
-            { id: "3", name: 'FSD' },
-            { id: "4", name: 'TSD' },
-            { id: "5", name: 'ISD' },
-            { id: "6", name: 'ZOD' }
+            { name: 'CITET' },
+            { name: 'IAD' },
+            { name: 'FSD' },
+            { name: 'TSD' },
+            { name: 'ISD' },
+            { name: 'ZOD' }
         ],
     })
 
     // Approval Roles
     await prisma.approvalRole.createMany({
         data: [
-            { id: "1", name: 'Supervisor', sequence: 1 },
-            { id: "2", name: 'Department Manager', sequence: 2 },
-            { id: "3", name: 'Auditor', sequence: 3 },
-            { id: "4", name: 'General Manager', sequence: 4 }
+            { name: 'Supervisor', sequence: 1 },
+            { name: 'Department Manager', sequence: 2 },
+            { name: 'Auditor', sequence: 3 },
+            { name: 'General Manager', sequence: 4 }
         ],
     })
 

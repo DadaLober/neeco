@@ -16,85 +16,6 @@ export default async function DocumentsPage() {
         return <div>Error fetching items</div>
     }
 
-    const data2 = [
-        {
-            id: "1",
-            referenceNo: "123456789",
-            documentType: "Invoice",
-            documentStatus: "approved",
-            purpose: "Invoice for XYZ Company",
-            supplier: "XYZ Company",
-            oic: true,
-            date: new Date(),
-            departmentId: "1",
-            department: {
-                id: "1",
-                name: "Finance"
-            }
-        },
-        {
-            id: "2",
-            referenceNo: "123456789",
-            documentType: "Invoice",
-            documentStatus: "approved",
-            purpose: "Invoice for XYZ Company",
-            supplier: "XYZ Company",
-            oic: true,
-            date: new Date(),
-            departmentId: "1",
-            department: {
-                id: "1",
-                name: "Finance"
-            }
-        },
-        {
-            id: "3",
-            referenceNo: "123456789",
-            documentType: "Invoice",
-            documentStatus: "approved",
-            purpose: "Invoice for XYZ Company",
-            supplier: "XYZ Company",
-            oic: true,
-            date: new Date(),
-            departmentId: "1",
-            department: {
-                id: "1",
-                name: "Finance"
-            }
-        },
-        {
-            id: "4",
-            referenceNo: "123456789",
-            documentType: "Invoice",
-            documentStatus: "approved",
-            purpose: "Invoice for XYZ Company",
-            supplier: "XYZ Company",
-            oic: true,
-            date: new Date(),
-            departmentId: "1",
-            department: {
-                id: "1",
-                name: "Finance"
-            }
-        },
-        {
-            id: "5",
-            referenceNo: "123456789",
-            documentType: "Invoice",
-            documentStatus: "approved",
-            purpose: "Invoice for XYZ Company",
-            supplier: "XYZ Company",
-            oic: true,
-            date: new Date(),
-            departmentId: "1",
-            department: {
-                id: "1",
-                name: "Finance"
-            }
-        },]
-
-    const combinedData = [...data, ...data2]
-
     if ('error' in data) {
         return <div>Error fetching items</div>
     }
@@ -102,7 +23,7 @@ export default async function DocumentsPage() {
     return (
         <div className="flex flex-col">
             <div className="flex">
-                <DocumentsTable documents={combinedData} />
+                <DocumentsTable documents={data} />
             </div>
         </div>
     )
