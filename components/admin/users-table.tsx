@@ -116,11 +116,13 @@ export function UsersTable({
                         accessorKey: "image",
                         cell: (user) => (
                             <div className="flex items-center gap-2">
-                                <Avatar>
+                                <Avatar key={user.id}>
                                     {user.image ? (
-                                        <AvatarImage src={user.image} alt={user.name} />
+                                        <AvatarImage src={user.image} alt={user.name || "User"} />
                                     ) : (
-                                        <AvatarFallback className="bg-green-200">{user?.name?.[0]?.toUpperCase()}</AvatarFallback>
+                                        <AvatarFallback className="bg-green-200">
+                                            {user?.name ? user.name[0]?.toUpperCase() : "?"}
+                                        </AvatarFallback>
                                     )}
                                 </Avatar>
                             </div>
@@ -139,10 +141,17 @@ export function UsersTable({
                             </div>
                         ),
                     },
-                    { header: "Role", accessorKey: "role" },
+                    {
+                        header: "Role",
+                        accessorKey: "role",
+                        sortable: true
+                    },
                     {
                         header: "Department",
                         accessorKey: "departmentId",
+                        sortable: true,
+                        filterable: true,
+                        filterAccessor: "department.name",
                         cell: (user) => (
                             <div className="flex items-center gap-2">{user.department ? user.department.name : "None"}</div>
                         ),
@@ -150,6 +159,9 @@ export function UsersTable({
                     {
                         header: "Approval Role",
                         accessorKey: "approvalRoleId",
+                        sortable: true,
+                        filterable: true,
+                        filterAccessor: "approvalRole.name",
                         cell: (user) => (
                             <div className="flex items-center gap-2">{user.approvalRole ? user.approvalRole.name : "None"}</div>
                         ),
@@ -157,13 +169,18 @@ export function UsersTable({
                     {
                         header: "Last Login",
                         accessorKey: "lastLogin",
+                        sortable: true,
                         cell: (user) => (
                             <div className="flex items-center gap-2">
                                 {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : "Never"}
                             </div>
                         ),
                     },
-                    { header: "Login Attempts", accessorKey: "loginAttempts" },
+                    {
+                        header: "Login Attempts",
+                        accessorKey: "loginAttempts",
+                        sortable: true
+                    },
                 ]}
                 rowActions={[
                     { label: "Edit", onClick: handleEditClick },
