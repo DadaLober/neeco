@@ -1,4 +1,6 @@
+import { getSelf, isUserOrAdmin } from "@/actions/roleActions";
 import { auth } from "@/auth";
+import AccessDeniedPage from "@/components/admin/access-denied";
 import { Header } from "@/components/dashboard/Header";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 
@@ -9,10 +11,20 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
 
+  if (!(await isUserOrAdmin(session))) {
+    return <AccessDeniedPage />;
+  }
+
+  const self = await getSelf(session);
+
+  if (!self) {
+    return <AccessDeniedPage />;
+  }
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       {/* Header remains fixed */}
-      <Header session={session} />
+      <Header user={self} />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

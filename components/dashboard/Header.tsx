@@ -7,14 +7,13 @@ import Link from 'next/link';
 
 // Authentication and Session imports
 import { signOut } from 'next-auth/react';
-import { Session } from 'next-auth';
 
 // Icons
 import {
   Bell,
   Settings,
   LogOut,
-  User,
+  User as UserIcon,
 } from 'lucide-react';
 
 // UI Component imports
@@ -35,11 +34,13 @@ import { UserSettingsDialog } from './UserSettingsDialog';
 import { ProfileDialog } from './ProfileDialog';
 import { useBreadcrumbs } from '@/hooks/use-breadcrumbs';
 
+import { User } from "@prisma/client";
+
 type HeaderProps = {
-  session: Session | null;
+  user: User | null;
 };
 
-export function Header({ session }: HeaderProps) {
+export function Header({ user }: HeaderProps) {
   const breadcrumbs = useBreadcrumbs();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -136,7 +137,7 @@ export function Header({ session }: HeaderProps) {
           </Button>
 
           {/* Avatar Dropdown */}
-          {session ? (
+          {user ? (
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -145,11 +146,11 @@ export function Header({ session }: HeaderProps) {
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage
-                      src={session?.user?.image || ""}
-                      alt={session?.user?.name || "User"}
+                      src={user.image || ""}
+                      alt={user.name || "User"}
                     />
                     <AvatarFallback className="bg-[#008033]/10 text-[#008033] dark:bg-white/10 dark:text-white">
-                      <User className="h-4 w-4" />
+                      <UserIcon className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -158,17 +159,17 @@ export function Header({ session }: HeaderProps) {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {session?.user?.name || 'Guest'}
+                      {user.name || 'Guest'}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {session?.user?.email || 'No email'}
+                      {user.email || 'No email'}
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem onSelect={handleProfileClick}>
-                    <User className="mr-2 h-4 w-4" />
+                    <UserIcon className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={handleSettingsClick}>
@@ -191,20 +192,20 @@ export function Header({ session }: HeaderProps) {
           )}
 
           {/* Profile Dialog */}
-          {session && (
+          {user && (
             <ProfileDialog
               isOpen={isProfileOpen}
               onOpenChange={handleProfileDialogChange}
-              session={session}
+              user={user}
             />
           )}
 
           {/* Settings Dialog */}
-          {session && (
+          {user && (
             <UserSettingsDialog
               isOpen={isSettingsOpen}
               onOpenChange={handleSettingsDialogChange}
-              session={session}
+              user={user}
             />
           )}
         </div>

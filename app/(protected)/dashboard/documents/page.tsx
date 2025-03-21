@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getAllDocuments } from "@/actions/itemActions";
-import { DocumentsTable } from "@/components/dashboard/documents-table";
+import { DocumentsTable } from "@/components/users/documents-table";
 
 export default async function DocumentsPage() {
     const session = await auth();

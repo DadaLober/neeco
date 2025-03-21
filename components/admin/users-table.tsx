@@ -144,12 +144,10 @@ export function UsersTable({
                     {
                         header: "Role",
                         accessorKey: "role",
-                        sortable: true
                     },
                     {
                         header: "Department",
                         accessorKey: "departmentId",
-                        sortable: true,
                         filterable: true,
                         filterAccessor: "department.name",
                         cell: (user) => (
@@ -159,7 +157,6 @@ export function UsersTable({
                     {
                         header: "Approval Role",
                         accessorKey: "approvalRoleId",
-                        sortable: true,
                         filterable: true,
                         filterAccessor: "approvalRole.name",
                         cell: (user) => (
@@ -169,7 +166,6 @@ export function UsersTable({
                     {
                         header: "Last Login",
                         accessorKey: "lastLogin",
-                        sortable: true,
                         cell: (user) => (
                             <div className="flex items-center gap-2">
                                 {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : "Never"}

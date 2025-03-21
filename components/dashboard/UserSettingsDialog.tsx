@@ -6,7 +6,6 @@ import { useState } from 'react';
 // Authentication and Theme imports
 import { setup2FA, verify2FA, disable2FA } from "@/actions/twoFactorAuth";
 import { useTheme } from 'next-themes';
-import { Session } from 'next-auth';
 import Image from "next/image";
 
 // Icons
@@ -22,16 +21,18 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 
+import { User } from "@prisma/client";
+
 interface UserSettingsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  session: Session | null;
+  user: User | null;
 }
 
-export function UserSettingsDialog({ isOpen, onOpenChange, session }: UserSettingsDialogProps) {
+export function UserSettingsDialog({ isOpen, onOpenChange, user }: UserSettingsDialogProps) {
   const { theme, setTheme } = useTheme();
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false);
-  const [twoFactorAuthEnabled, setTwoFactorAuthEnabled] = useState(session?.user?.is2FAEnabled || false);
+  const [twoFactorAuthEnabled, setTwoFactorAuthEnabled] = useState(user?.is2FAEnabled || false);
   const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
@@ -118,7 +119,7 @@ export function UserSettingsDialog({ isOpen, onOpenChange, session }: UserSettin
                 <div>
                   <p className="text-sm font-medium">Email</p>
                   <p className="text-xs text-muted-foreground">
-                    {session?.user?.email || 'No email'}
+                    {user?.email || 'No email'}
                   </p>
                 </div>
                 <Button variant="outline" size="sm">

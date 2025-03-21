@@ -1,13 +1,10 @@
 'use client';
 
 // React core imports
-import React, { useState } from 'react';
-
-// Authentication and Session imports
-import { Session } from 'next-auth';
+import React, { useState, useEffect } from 'react';
 
 // Icons
-import { User, Camera, Save, X, Edit, Check } from 'lucide-react';
+import { User as UserIcon, Camera, Save, X, Edit, Check, AlertCircle } from 'lucide-react';
 
 // UI Component imports
 import {
@@ -21,28 +18,66 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Server action imports
 import { updateUserProfile } from '@/actions/profileActions';
 
+import { User } from "@prisma/client";
+
 interface ProfileDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  session: Session | null;
+  user: User | null;
 }
 
-export function ProfileDialog({ isOpen, onOpenChange, session }: ProfileDialogProps) {
-  const [name, setName] = useState(session?.user?.name || '');
+export function ProfileDialog({ isOpen, onOpenChange, user }: ProfileDialogProps) {
+  const [name, setName] = useState(user?.name || '');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isNameEditing, setIsNameEditing] = useState(false);
   const [editedName, setEditedName] = useState(name);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reset state when user changes or dialog opens
+  useEffect(() => {
+    if (isOpen) {
+      setName(user?.name || '');
+      setEditedName(user?.name || '');
+      setAvatarPreview(null);
+      setValidationError(null);
+      setIsNameEditing(false);
+    }
+  }, [isOpen, user]);
+
+  const validateName = (value: string): boolean => {
+    if (!value.trim()) {
+      setValidationError("Name cannot be empty");
+      return false;
+    }
+
+    if (value.length > 50) {
+      setValidationError("Name must be less than 50 characters");
+      return false;
+    }
+
+    setValidationError(null);
+    return true;
+  };
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file size (2MB max)
+      if (file.size > 2 * 1024 * 1024) {
+        setValidationError("Image size must be less than 2MB");
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
+        setValidationError(null);
       };
       reader.readAsDataURL(file);
     }
@@ -50,26 +85,43 @@ export function ProfileDialog({ isOpen, onOpenChange, session }: ProfileDialogPr
 
   const handleNameEditToggle = () => {
     if (isNameEditing) {
-      // Save the edited name
-      setName(editedName);
-      setIsNameEditing(false);
+      // Validate and save the edited name
+      if (validateName(editedName)) {
+        setName(editedName);
+        setIsNameEditing(false);
+      }
     } else {
       // Start editing
       setEditedName(name);
       setIsNameEditing(true);
+      setValidationError(null);
     }
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditedName(e.target.value);
+    if (validationError) {
+      validateName(e.target.value);
+    }
+  };
+
+  const handleCancel = () => {
+    onOpenChange(false);
   };
 
   const handleSave = async () => {
+    // Final validation before submission
+    if (!validateName(name)) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
     try {
       const formData = new FormData();
 
       // Add name to form data if changed
-      if (name !== session?.user?.name) {
+      if (name !== user?.name) {
         formData.append('name', name);
       }
 
@@ -84,14 +136,16 @@ export function ProfileDialog({ isOpen, onOpenChange, session }: ProfileDialogPr
       const result = await updateUserProfile(formData);
 
       if (result.error) {
-        alert(`Failed to update profile: ${result.error}`);
+        setValidationError(`Failed to update profile: ${result.error}`);
         return;
       }
 
       // Close the dialog
       onOpenChange(false);
     } catch (error) {
-      alert(`Failed to update profile: ${error}`);
+      setValidationError(`Failed to update profile: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -105,15 +159,23 @@ export function ProfileDialog({ isOpen, onOpenChange, session }: ProfileDialogPr
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {validationError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{validationError}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               <Avatar className="h-24 w-24">
+                {/* Show preview if available, otherwise show current image */}
                 <AvatarImage
-                  src={session?.user?.image || ""}
+                  src={avatarPreview || user?.image || ""}
                   alt="Profile Picture"
                 />
                 <AvatarFallback className="bg-[#008033]/10 text-[#008033]">
-                  <User className="h-8 w-8" />
+                  <UserIcon className="h-8 w-8" />
                 </AvatarFallback>
               </Avatar>
               <label
@@ -157,12 +219,17 @@ export function ProfileDialog({ isOpen, onOpenChange, session }: ProfileDialogPr
         <div className="flex justify-end space-x-2">
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={handleCancel}
+            disabled={isSubmitting}
           >
             <X className="mr-2 h-4 w-4" /> Cancel
           </Button>
-          <Button onClick={handleSave}>
-            <Save className="mr-2 h-4 w-4" /> Save Changes
+          <Button
+            onClick={handleSave}
+            disabled={isSubmitting || !!validationError}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       </DialogContent>
