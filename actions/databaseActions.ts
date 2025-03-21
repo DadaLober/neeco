@@ -69,12 +69,11 @@ export async function setLoginAttemptsInDB(email: string): Promise<User> {
     });
 }
 
-export async function createUserInDB(name: string, email: string, role: string, password: string): Promise<User> {
+export async function createUserInDB(name: string, email: string, password: string): Promise<User> {
     return await prisma.user.create({
         data: {
             name: name,
             email: email,
-            role: role,
             password: password,
         },
     });

@@ -22,15 +22,11 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
-      {/* Header remains fixed */}
+    <div className="flex flex-col">
       <Header user={self} />
-
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-row">
         <Sidebar />
-
-        {/* Main section is scrollable */}
-        <main className="flex-1 h-screen overflow-auto">
+        <main className="flex-grow overflow-auto">
           {children}
         </main>
       </div>

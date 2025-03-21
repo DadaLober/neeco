@@ -113,7 +113,7 @@ export async function register(values: RegisterInput): Promise<{ callbackUrl: st
 
         const hashedPassword = await hash(values.password, 10);
 
-        await createUserInDB(values.name, values.email, defaultRole, hashedPassword);
+        await createUserInDB(values.name, values.email, hashedPassword);
 
         return { callbackUrl: redirectUrl };
     } catch (error) {

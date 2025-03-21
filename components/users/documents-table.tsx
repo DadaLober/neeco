@@ -2,6 +2,7 @@
 
 import { CardTable } from "@/components/ui/card-table";
 import { Department, Documents } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 type DocumentsWithDepartment = Partial<Documents> & { department?: Department | null };
 
@@ -10,6 +11,7 @@ type DocumentsTableProps = {
 };
 
 export function DocumentsTable({ documents }: DocumentsTableProps) {
+    const router = useRouter();
     return (
         <CardTable
             data={documents}
@@ -17,18 +19,19 @@ export function DocumentsTable({ documents }: DocumentsTableProps) {
                 {
                     header: "Ref No",
                     accessorKey: "referenceNo",
-                    sortable: true,
                     cell: (doc) => <div className="font-medium">{doc.referenceNo}</div>,
                 },
                 {
                     header: "Type",
                     accessorKey: "documentType",
-                    sortable: true,
+                    filterable: true,
+                    filterAccessor: "documentType",
                 },
                 {
                     header: "Status",
                     accessorKey: "documentStatus",
-                    sortable: true,
+                    filterable: true,
+                    filterAccessor: "documentStatus",
                     cell: (doc) => (
                         <span
                             className={`px-2 py-1 rounded-full text-sm font-medium ${doc.documentStatus === "approved"
@@ -45,7 +48,6 @@ export function DocumentsTable({ documents }: DocumentsTableProps) {
                 {
                     header: "Purpose",
                     accessorKey: "purpose",
-                    sortable: true,
                     cell: (doc) => (
                         <div className="text-sm text-muted-foreground">{doc.purpose}</div>
                     ),
@@ -53,12 +55,10 @@ export function DocumentsTable({ documents }: DocumentsTableProps) {
                 {
                     header: "Supplier",
                     accessorKey: "supplier",
-                    sortable: true,
                 },
                 {
                     header: "OIC",
                     accessorKey: "oic",
-                    sortable: true,
                     cell: (doc) => (
                         <div
                             className={`text-sm font-medium ${doc.oic ? "text-green-600" : "text-gray-500"
@@ -81,7 +81,8 @@ export function DocumentsTable({ documents }: DocumentsTableProps) {
                 {
                     header: "Department",
                     accessorKey: "department",
-                    sortable: true,
+                    filterAccessor: "department.name",
+                    filterable: true,
                     cell: (doc) => (
                         <div>
                             {doc.department ? doc.department.name : "None"}
@@ -97,10 +98,7 @@ export function DocumentsTable({ documents }: DocumentsTableProps) {
                 {
                     label: "View",
                     onClick: (doc) => {
-                        alert({
-                            title: "View Document",
-                            description: `Viewing document: ${doc.referenceNo}`,
-                        });
+                        router.push(`documents/${doc.id}`);
                     },
                 },
                 {

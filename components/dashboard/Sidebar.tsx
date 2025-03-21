@@ -57,8 +57,9 @@ function SidebarContent({ className, collapsed }: SidebarContentProps) {
   const pathname = usePathname();
 
   return (
-    <div className={cn("relative min-h-full", className)}>
-      <div className="px-3 py-2">
+    <div className={cn("flex flex-col h-full", className)}>
+      {/* Main Content */}
+      <div className="flex-grow px-3 py-2">
         <div className="mt-3 space-y-1">
           {sidebarLinks.map((link) => (
             <Link
@@ -67,15 +68,12 @@ function SidebarContent({ className, collapsed }: SidebarContentProps) {
               className={cn(
                 "flex items-center rounded-lg px-3 py-2 text-sm transition-all",
                 collapsed ? "justify-center" : "justify-start",
-                pathname === link.href ?
-                  "bg-[#008033] text-white dark:bg-[#008033] dark:text-white cursor-default" :
-                  "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
+                pathname === link.href
+                  ? "bg-[#008033] text-white dark:bg-[#008033] dark:text-white cursor-default"
+                  : "text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
               )}
             >
-              <link.icon className={cn(
-                "h-4 w-4",
-                collapsed ? "mr-0" : "mr-2"
-              )} />
+              <link.icon className={cn("h-4 w-4", collapsed ? "mr-0" : "mr-2")} />
               {!collapsed && <span>{link.title}</span>}
             </Link>
           ))}
@@ -84,7 +82,7 @@ function SidebarContent({ className, collapsed }: SidebarContentProps) {
 
       {/* Bottom Buttons */}
       <div className={cn(
-        "absolute bottom-0 left-0 right-0 p-3 space-y-2 border-t bg-background dark:bg-[#006629] dark:border-[#008033]",
+        "p-3 space-y-2 border-t bg-background dark:bg-[#006629] dark:border-[#008033]",
         collapsed ? "flex flex-col items-center" : ""
       )}>
         <Button
