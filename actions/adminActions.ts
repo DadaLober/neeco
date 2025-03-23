@@ -3,7 +3,7 @@
 import { auth } from '@/auth';
 import { ApprovalRole, Department, User } from '@prisma/client';
 import { IdSchema, validateRole, UnauthorizedResponse, numberSchema } from '@/schemas';
-import { deleteUserFromDB, getAllApprovalRolesFromDB, getAllDepartmentsFromDB, getAllUsersFromDB, setApprovalRoleInDB, setDepartmentInDB, setRoleInDB, updateUserInDB } from './databaseActions';
+import { deleteUserFromDB, getAllApprovalRolesFromDB, getAllDepartmentsFromDB, getAllUsersFromDB, setApprovalRoleInDB, setDepartmentInDB, setRoleInDB, updateUserInDB } from './queries';
 import { isAdmin } from './roleActions';
 
 export async function getAllUsers(): Promise<Partial<User>[] | UnauthorizedResponse> {

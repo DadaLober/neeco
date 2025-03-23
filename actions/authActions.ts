@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { AuthError } from "next-auth";
 import { auth, signIn } from "@/auth";
 import { loginSchema, registerSchema, UnauthorizedResponse } from "@/schemas";
-import { createUserInDB, getUserByEmailFromDB, setLastLoginInDB, setLoginAttemptsInDB } from "./databaseActions";
+import { createUserInDB, getUserByEmailFromDB, setLastLoginInDB, setLoginAttemptsInDB } from "./queries";
 import { isUserOrAdmin } from "./roleActions";
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -102,7 +102,6 @@ export async function register(values: RegisterInput): Promise<{ callbackUrl: st
     }
 
     const redirectUrl = "/login";
-    const defaultRole = "USER";
 
     try {
         const existingUser = await getUserByEmailFromDB(values.email);

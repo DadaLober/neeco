@@ -43,11 +43,16 @@ export type CardTableProps<T> = {
 };
 
 // Helper function to get a value from an object using a path string (e.g. "department.name")
-const getValueByPath = (obj: any, path: string): any => {
-    return path.split('.').reduce((acc, part) => (acc && acc[part] !== undefined) ? acc[part] : undefined, obj);
+const getValueByPath = (obj: Record<string, unknown>, path: string): unknown => {
+    return path.split('.').reduce<unknown>((acc, part) => {
+        if (typeof acc === 'object' && acc !== null && part in acc) {
+            return (acc as Record<string, unknown>)[part];
+        }
+        return undefined;
+    }, obj);
 };
 
-export function CardTable<T extends Record<string, any>>({
+export function CardTable<T extends Record<string, unknown>>({
     data,
     columns,
     title,

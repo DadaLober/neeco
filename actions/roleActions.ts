@@ -4,7 +4,7 @@ import { UserRoleSchema } from "@/schemas";
 import { User } from "@prisma/client";
 import { get } from "http";
 import { Session } from "next-auth";
-import { getUserByIDFromDB } from "./databaseActions";
+import { getUserByIDFromDB } from "./queries";
 
 // Check if a user has admin privileges
 export async function isAdmin(session: Session | null): Promise<boolean> {

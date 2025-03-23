@@ -5,7 +5,7 @@ import speakeasy from "speakeasy";
 import { auth } from "@/auth";
 import { IdSchema, otpSchema } from "@/schemas";
 import { isUserOrAdmin } from "./roleActions";
-import { disable2FAInDB, getUserByIDFromDB, setup2FAInDB, verify2FAInDB } from "./databaseActions";
+import { disable2FAInDB, getUserByIDFromDB, setup2FAInDB, verify2FAInDB } from "./queries";
 
 export async function setup2FA(): Promise<{ qrCodeDataURL: string } | { error: string }> {
     const session = await auth();

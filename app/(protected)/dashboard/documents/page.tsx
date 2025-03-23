@@ -21,10 +21,6 @@ export default async function DocumentsPage() {
     }
 
     return (
-        <div className="flex flex-col">
-            <div className="flex">
-                <DocumentsTable documents={data} />
-            </div>
-        </div>
+        <DocumentsTable documents={data} />
     )
 }

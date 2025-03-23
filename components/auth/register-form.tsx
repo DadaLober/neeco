@@ -35,7 +35,7 @@ function PasswordStrengthIndicator({ password }: { password: string }) {
     const requirements = [
         { re: /[A-Z]/, label: "Uppercase" },
         { re: /[a-z]/, label: "Lowercase" },
-        { re: /[0-9]/, label: "Number" },
+        { re: /\d/, label: "Numbers" },
         { re: /.{8,}/, label: "Min 8 characters" },
     ]
 

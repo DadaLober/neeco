@@ -30,7 +30,7 @@ interface UserSettingsDialogProps {
 }
 
 export function UserSettingsDialog({ isOpen, onOpenChange, user }: UserSettingsDialogProps) {
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false);
   const [twoFactorAuthEnabled, setTwoFactorAuthEnabled] = useState(user?.is2FAEnabled || false);
   const [loading, setLoading] = useState(false);
@@ -75,7 +75,8 @@ export function UserSettingsDialog({ isOpen, onOpenChange, user }: UserSettingsD
       setTwoFactorAuthEnabled(true);
       setQrCode(null);
     } catch (error) {
-      alert("Incorrect OTP. Please try again.");
+      // Use the error variable in the alert
+      alert(error instanceof Error ? error.message : "Incorrect OTP. Please try again.");
     } finally {
       setLoading(false);
     }

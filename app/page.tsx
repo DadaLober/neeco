@@ -3,7 +3,7 @@ import "./globals.css"
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main>
       <RandomShapesGrid />
     </main>
   )

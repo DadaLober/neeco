@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { complete2FALogin } from "@/actions/authActions"
 import { verify2FA } from "@/actions/twoFactorAuth"
@@ -13,6 +13,11 @@ export function TwoFactorVerification() {
     const [isVerifying, setIsVerifying] = useState(false)
     const router = useRouter()
 
+    // Memoize resetOtp to prevent unnecessary recreations
+    const resetOtp = useCallback(() => {
+        setOtp(new Array(6).fill(""))
+    }, [])
+
     // Handle OTP change from child component
     const handleOtpChange = (newOtp: string[]) => {
         setOtp(newOtp)
@@ -21,14 +26,8 @@ export function TwoFactorVerification() {
         if (error) setError(null)
     }
 
-    // Auto-submit when all digits are filled
-    useEffect(() => {
-        if (otp.every(digit => digit !== "")) {
-            handleVerify()
-        }
-    }, [otp])
-
-    const handleVerify = async () => {
+    // Memoize handleVerify with dependencies on otp and resetOtp
+    const handleVerify = useCallback(async () => {
         try {
             setIsVerifying(true)
 
@@ -57,11 +56,14 @@ export function TwoFactorVerification() {
         } finally {
             setIsVerifying(false)
         }
-    }
+    }, [otp, resetOtp, router]) // Include dependencies used inside handleVerify
 
-    const resetOtp = () => {
-        setOtp(new Array(6).fill(""))
-    }
+    // Auto-submit when all digits are filled
+    useEffect(() => {
+        if (otp.every(digit => digit !== "")) {
+            handleVerify()
+        }
+    }, [otp, handleVerify]) // Dependencies are now stable
 
     return (
         <div className="flex flex-col items-center space-y-6">

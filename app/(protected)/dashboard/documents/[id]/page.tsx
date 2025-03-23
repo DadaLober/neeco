@@ -1,4 +1,3 @@
-import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import {
@@ -71,18 +70,31 @@ async function getDocumentById(id: string) {
     }
 }
 
+export default async function DocumentPage({
+    params
+}: {
+    params: Promise<{ id: string }> | undefined
+}) {
+    // Handle both Promise and direct object cases
+    const resolvedParams = params ? await params : undefined;
+    const id = resolvedParams?.id;
 
-export default async function DocumentPage({ params }: { params: { id: string } }) {
-    const document = await getDocumentById(params.id)
+    if (!id) {
+        notFound();
+    }
+
+    const document = await getDocumentById(id);
 
     if (!document) {
-        notFound()
+        notFound();
     }
 
     const getCurrentApproverStep = () => {
         // Find the first pending step
         return document.approvalSteps.find((step) => step.status === "pending");
     }
+
+    type BadgeVariant = "default" | "destructive" | "outline" | "secondary";
 
     // Get status badge variant based on status
     const getStatusBadgeVariant = (status: string) => {
@@ -93,8 +105,6 @@ export default async function DocumentPage({ params }: { params: { id: string } 
                 return "destructive"
             case "in progress":
                 return "warning"
-            case "pending":
-                return "secondary"
             default:
                 return "secondary"
         }
@@ -140,7 +150,7 @@ export default async function DocumentPage({ params }: { params: { id: string } 
                                     <CardTitle>{document.referenceNo}</CardTitle>
                                     <CardDescription>{document.itemType}</CardDescription>
                                 </div>
-                                <Badge variant={getStatusBadgeVariant(document.itemStatus) as any}>{document.itemStatus}</Badge>
+                                <Badge variant={getStatusBadgeVariant(document.itemStatus) as BadgeVariant}>{document.itemStatus}</Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="pb-4">

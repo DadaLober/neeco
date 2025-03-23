@@ -43,11 +43,13 @@ export default async function UsersPage() {
   }
 
   return (
-    <main className="flex flex-col">
-      <div className="flex">
-        <UsersTable users={users} departments={departments} approvalRoles={approvalRoles} deleteAction={handleDelete} updateAction={handleUpdate} />
-      </div>
-    </main>
+    <UsersTable
+      users={users}
+      departments={departments}
+      approvalRoles={approvalRoles}
+      deleteAction={handleDelete}
+      updateAction={handleUpdate}
+    />
   )
 }
 

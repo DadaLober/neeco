@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { auth } from '@/auth';
 import { IdSchema, UnauthorizedResponse } from '@/schemas';
 import { isUserOrAdmin } from './roleActions';
-import { deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './databaseActions';
+import { deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './queries';
 import { Documents } from '@prisma/client';
 
 const statusSchema = z.string().min(1).max(50);
