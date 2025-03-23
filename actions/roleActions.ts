@@ -2,7 +2,6 @@
 
 import { UserRoleSchema } from "@/schemas";
 import { User } from "@prisma/client";
-import { get } from "http";
 import { Session } from "next-auth";
 import { getUserByIDFromDB } from "./queries";
 
