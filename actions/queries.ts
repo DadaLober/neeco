@@ -146,28 +146,28 @@ export async function verify2FAInDB(userId: string): Promise<User> {
     });
 }
 
-export function disable2FAInDB(userId: string): Promise<User> {
+export async function disable2FAInDB(userId: string): Promise<User> {
     return prisma.user.update({
         where: { id: userId },
         data: { is2FAEnabled: false, twoFASecret: null },
     });
 }
 
-export function setDepartmentInDB(userId: string, departmentId: number): Promise<User> {
+export async function setDepartmentInDB(userId: string, departmentId: number): Promise<User> {
     return prisma.user.update({
         where: { id: userId },
         data: { departmentId: departmentId }
     });
 }
 
-export function setApprovalRoleInDB(userId: string, approvalRoleId: number): Promise<User> {
+export async function setApprovalRoleInDB(userId: string, approvalRoleId: number): Promise<User> {
     return prisma.user.update({
         where: { id: userId },
         data: { approvalRoleId: approvalRoleId }
     });
 }
 
-export function getAllDepartmentsFromDB(): Promise<Department[]> {
+export async function getAllDepartmentsFromDB(): Promise<Department[]> {
     return prisma.department.findMany({
         select: {
             id: true,
@@ -176,7 +176,7 @@ export function getAllDepartmentsFromDB(): Promise<Department[]> {
     });
 }
 
-export function getAllApprovalRolesFromDB(): Promise<ApprovalRole[]> {
+export async function getAllApprovalRolesFromDB(): Promise<ApprovalRole[]> {
     return prisma.approvalRole.findMany({
         select: {
             id: true,
@@ -186,7 +186,7 @@ export function getAllApprovalRolesFromDB(): Promise<ApprovalRole[]> {
     });
 }
 
-export function updateUserInDB(userId: string, data: Partial<User>): Promise<User> {
+export async function updateUserInDB(userId: string, data: Partial<User>): Promise<User> {
     return prisma.user.update({
         where: { id: userId },
         data: data

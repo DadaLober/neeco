@@ -101,25 +101,25 @@ export function DocumentsTable({ documents }: DocumentsTableProps) {
                         router.push(`documents/${doc.id}`);
                     },
                 },
-                {
-                    label: "Edit",
-                    onClick: (doc) => {
-                        alert({
-                            title: "Edit Document",
-                            description: `Editing document: ${doc.referenceNo}`,
-                        });
-                    },
-                },
-                {
-                    label: "Delete",
-                    onClick: (doc) => {
-                        alert({
-                            title: "Delete Document",
-                            description: `Deleting document: ${doc.referenceNo}`,
-                            variant: "destructive",
-                        });
-                    },
-                },
+                // {
+                //     label: "Edit",
+                //     onClick: (doc) => {
+                //         alert({
+                //             title: "Edit Document",
+                //             description: `Editing document: ${doc.referenceNo}`,
+                //         });
+                //     },
+                // },
+                // {
+                //     label: "Delete",
+                //     onClick: (doc) => {
+                //         alert({
+                //             title: "Delete Document",
+                //             description: `Deleting document: ${doc.referenceNo}`,
+                //             variant: "destructive",
+                //         });
+                //     },
+                // },
             ]}
         />
     );

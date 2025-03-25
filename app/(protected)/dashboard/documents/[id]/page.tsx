@@ -19,9 +19,34 @@ import { Separator } from "@/components/ui/separator"
 import { ApprovalTimeline } from "@/components/users/approval-timeline"
 import { prisma as db } from "@/lib/prisma"
 
-async function getDocumentById(id: string) {
+export type TransformedDocument = {
+    id: string;
+    referenceNo: string;
+    itemType: string;
+    itemStatus: string;
+    date: Date | null;
+    departmentName: string;
+    oic: boolean;
+    supplier: string | null;
+    purpose: string | null;
+    totalApprovalSteps: number;
+    approvalSteps: Array<{
+        role: {
+            id: number;
+            name: string;
+            sequence: number | null
+        };
+        user: {
+            id: string;
+            name: string | null;
+            email: string | null;
+        } | null;
+        status: string;
+    }>;
+}
+
+export async function getDocumentById(id: string): Promise<TransformedDocument | null> {
     try {
-        // Fetch document with related data
         const document = await db.documents.findUnique({
             where: { id },
             include: {
@@ -134,14 +159,16 @@ export default async function DocumentPage({
 
     return (
         <>
-            <Button asChild variant="outline" size="sm">
-                <Link href="/dashboard/documents">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Documents
-                </Link>
-            </Button>
+            <div className="flex justify-end p-2">
+                <Button asChild variant="outline" size="sm">
+                    <Link href="/dashboard/documents">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Documents
+                    </Link>
+                </Button>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-2">
                 <div className="md:col-span-2 space-y-6">
                     <Card>
                         <CardHeader className="pb-3">
@@ -202,14 +229,14 @@ export default async function DocumentPage({
                         </CardContent>
                         <CardFooter className="bg-muted/50 flex justify-end gap-3 pt-3 pb-3 px-6 border-t">
                             <Button variant="outline" className="w-auto" asChild>
-                                <Link href={`/documents/${document.id}/view-pdf`}>
+                                <Link href={`/dashboard/documents/${document.id}/view-pdf`}>
                                     <FileIcon className="mr-2 h-4 w-4" />
                                     View PDF
                                 </Link>
                             </Button>
-                            <Button variant="outline" className="w-auto" asChild>
+                            {/* <Button variant="outline" className="w-auto" asChild>
                                 <Link href={`/documents/${document.id}/edit`}>Edit Document</Link>
-                            </Button>
+                            </Button> */}
                         </CardFooter>
                     </Card>
 
@@ -316,16 +343,6 @@ export default async function DocumentPage({
                             <CardTitle>Document Actions</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
-                            {document.itemStatus.toLowerCase() === "pending" && (
-                                <Button variant="secondary" className="w-full">
-                                    Submit for Approval
-                                </Button>
-                            )}
-                            {document.itemStatus.toLowerCase() === "rejected" && (
-                                <Button variant="destructive" className="w-full">
-                                    Resubmit Document
-                                </Button>
-                            )}
                             <Button variant="outline" className="w-full">
                                 Download Document
                             </Button>

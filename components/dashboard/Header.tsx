@@ -79,7 +79,7 @@ export function Header({ user }: HeaderProps) {
   };
 
   return (
-    <header className="border-b bg-white dark:border-none dark:bg-[#008033]">
+    <header className="sticky top-0 z-50 border-b bg-white dark:border-none dark:bg-[#008033]">
       <div className="flex h-16 items-center px-4 lg:px-8 justify-between">
         <div className="flex items-center gap-2">
           <Link href="/dashboard" className="flex items-center gap-2">

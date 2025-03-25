@@ -4,21 +4,20 @@ import { CheckCircle, XCircle, Clock, Calendar } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ApprovalStep {
-    id: string
-    documentId: string
-    roleId: number
-    userId: string | null
+    id?: string
+    documentId?: string
+    userId?: string | null
     status: string
-    approvedAt: Date | null
+    approvedAt?: Date | null
     role: {
         id: number
         name: string
-        sequence: number
+        sequence: number | null
     }
     user?: {
         id: string
-        name: string
-        email: string
+        name: string | null
+        email: string | null
     } | null
 }
 
@@ -28,7 +27,7 @@ interface ApprovalTimelineProps {
 
 export function ApprovalTimeline({ steps }: ApprovalTimelineProps) {
     // Sort steps by the sequence from the role property
-    const sortedSteps = [...steps].sort((a, b) => a.role.sequence - b.role.sequence)
+    const sortedSteps = [...steps].sort((a, b) => (a.role.sequence ?? 0) - (b.role.sequence ?? 0))
 
     // Format date function
     const formatDate = (date: Date | null) => {
@@ -48,7 +47,7 @@ export function ApprovalTimeline({ steps }: ApprovalTimelineProps) {
         <div className="space-y-4">
             <ol className="relative border-l border-muted ml-3">
                 {sortedSteps.map((step, index) => (
-                    <li key={step.id} className={cn("mb-6 ml-6", index === sortedSteps.length - 1 && "mb-0")}>
+                    <li key={step.role.id} className={cn("mb-6 ml-6", index === sortedSteps.length - 1 && "mb-0")}>
                         <span
                             className={cn(
                                 "absolute flex items-center justify-center w-6 h-6 rounded-full -left-3",
