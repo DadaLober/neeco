@@ -8,8 +8,15 @@ export const metadata: Metadata = {
     description: "View the PDF version of this document",
 }
 
-export default async function ViewPdfPage({ params }: { params: { id: string } }) {
-    const document = await getDocumentById(params.id)
+export default async function DocumentPage({ params }: { params: Promise<{ id: string }> | undefined }) {
+    const resolvedParams = params ? await params : undefined;
+    const id = resolvedParams?.id;
+
+    if (!id) {
+        notFound();
+    }
+
+    const document = await getDocumentById(resolvedParams.id);
 
     if (!document) {
         console.log("Document not found")

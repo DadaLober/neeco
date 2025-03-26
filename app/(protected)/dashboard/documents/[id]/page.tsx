@@ -95,11 +95,7 @@ export async function getDocumentById(id: string): Promise<TransformedDocument |
     }
 }
 
-export default async function DocumentPage({
-    params
-}: {
-    params: Promise<{ id: string }> | undefined
-}) {
+export default async function DocumentPage({ params }: { params: Promise<{ id: string }> | undefined }) {
     // Handle both Promise and direct object cases
     const resolvedParams = params ? await params : undefined;
     const id = resolvedParams?.id;
@@ -163,7 +159,7 @@ export default async function DocumentPage({
                 <Button asChild variant="outline" size="sm">
                     <Link href="/dashboard/documents">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Documents
+                        Back
                     </Link>
                 </Button>
             </div>

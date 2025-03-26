@@ -125,7 +125,7 @@ export function Header({ user }: HeaderProps) {
 
         <div className="flex items-center gap-4">
           {/* Notifications */}
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             className="relative text-[#008033] hover:bg-[#008033]/10 dark:text-white dark:hover:bg-white/20"
@@ -134,7 +134,7 @@ export function Header({ user }: HeaderProps) {
             <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">
               2
             </span>
-          </Button>
+          </Button> */}
 
           {/* Avatar Dropdown */}
           {user ? (

@@ -31,12 +31,12 @@ interface UserSettingsDialogProps {
 
 export function UserSettingsDialog({ isOpen, onOpenChange, user }: UserSettingsDialogProps) {
   const { setTheme } = useTheme();
-  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false);
   const [twoFactorAuthEnabled, setTwoFactorAuthEnabled] = useState(user?.is2FAEnabled || false);
   const [loading, setLoading] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
   const [showQRDialog, setShowQRDialog] = useState(false);
+  // const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(false);
 
   async function handle2FAToggle(enabled: boolean) {
     try {
@@ -94,7 +94,7 @@ export function UserSettingsDialog({ isOpen, onOpenChange, user }: UserSettingsD
             <h3 className="text-lg font-semibold mb-3">Appearance</h3>
             <div className="grid grid-cols-2 gap-4">
               <Button
-                variant="default"
+                variant="outline"
                 onClick={() => setTheme('light')}
                 className="flex items-center justify-center gap-2"
               >
@@ -140,14 +140,14 @@ export function UserSettingsDialog({ isOpen, onOpenChange, user }: UserSettingsD
               </div>
               <div className="flex items-center justify-between">
               </div>
-              <div className="flex items-center justify-between">
+              {/* <div className="flex items-center justify-between">
                 <label htmlFor="email-notifications" className="text-sm">Email Notifications</label>
                 <Switch
                   id="email-notifications"
                   checked={emailNotificationsEnabled}
                   onCheckedChange={setEmailNotificationsEnabled}
                 />
-              </div>
+              </div> */}
               <div className="flex items-center justify-between">
                 <label htmlFor="two-factor-auth" className="text-sm">Two-Factor Authentication</label>
                 <Switch
