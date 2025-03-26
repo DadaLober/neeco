@@ -1,14 +1,14 @@
+import { isUserOrAdmin } from "@/actions/roleActions";
 import { auth } from "@/auth";
+import { Dashboard } from "@/components/dashboard/dashboard";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
   const session = await auth();
 
-  if (!session) {
+  if (!await isUserOrAdmin(session) && !session) {
     redirect("/login");
   }
 
-  return (
-    <h1 className="text-2xl font-bold">Dashboard</h1>
-  )
+  return <Dashboard />
 }

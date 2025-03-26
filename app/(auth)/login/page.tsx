@@ -10,7 +10,7 @@ export default async function LoginPage() {
                 <div className="w-full flex justify-center mt-4 sm:mt-8 lg:mt-0">
                     <a href="#" className="flex items-center">
                         <Image
-                            src="/logo.png"
+                            src="/logo2.png"
                             alt="logo"
                             width={366}
                             height={101}

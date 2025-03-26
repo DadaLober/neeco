@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { BookOpen, Command, HelpCircle, SquareTerminal, Users } from "lucide-react"
+import { BookOpen, HelpCircle, SquareTerminal, Users, ArrowRight, Compass } from "lucide-react"
 
 import { NavMain } from "./nav-main"
 import { NavSecondary } from "./nav-secondary"
@@ -24,6 +24,18 @@ const data = {
       url: "/dashboard",
       icon: SquareTerminal,
       isActive: true,
+      items: [
+        {
+          title: "Introduction",
+          url: "/dashboard/introduction",
+          icon: Compass,
+        },
+        {
+          title: "Getting Started",
+          url: "/dashboard/getting-started",
+          icon: ArrowRight,
+        },
+      ],
     },
     {
       title: "Documents",

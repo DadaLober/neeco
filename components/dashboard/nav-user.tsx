@@ -17,6 +17,7 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/c
 import { ProfileDialog } from "./profile-dialog"
 import { SettingsDialog } from "./settings-dialog"
 import { useState } from "react"
+import { signOut } from "next-auth/react"
 
 export function NavUser({
   user,
@@ -32,6 +33,10 @@ export function NavUser({
 
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: '/login' });
+  };
 
   return (
     <SidebarMenu>
@@ -83,7 +88,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>

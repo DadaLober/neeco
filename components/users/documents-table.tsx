@@ -34,9 +34,9 @@ export function DocumentsTable({ documents }: DocumentsTableProps) {
                     filterAccessor: "documentStatus",
                     cell: (doc) => (
                         <span
-                            className={`px-2 py-1 rounded-full text-sm font-medium ${doc.documentStatus === "approved"
+                            className={`px-2 py-1 rounded-full text-sm font-medium ${doc.documentStatus === "Approved"
                                 ? "bg-green-100 text-green-700"
-                                : doc.documentStatus === "rejected"
+                                : doc.documentStatus === "Rejected"
                                     ? "bg-red-100 text-red-700"
                                     : "bg-gray-100 text-gray-700"
                                 }`}
