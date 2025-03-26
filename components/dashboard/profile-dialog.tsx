@@ -23,12 +23,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 // Server action imports
 import { updateUserProfile } from '@/actions/profileActions';
 
-import { User } from "@prisma/client";
-
 interface ProfileDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  user: User | null;
+  user: {
+    name: string;
+    email: string;
+    avatar: string;
+  }
 }
 
 export function ProfileDialog({ isOpen, onOpenChange, user }: ProfileDialogProps) {
@@ -171,7 +173,7 @@ export function ProfileDialog({ isOpen, onOpenChange, user }: ProfileDialogProps
               <Avatar className="h-24 w-24">
                 {/* Show preview if available, otherwise show current image */}
                 <AvatarImage
-                  src={avatarPreview || user?.image || ""}
+                  src={avatarPreview || user?.avatar || ""}
                   alt="Profile Picture"
                 />
                 <AvatarFallback className="bg-[#008033]/10 text-[#008033]">

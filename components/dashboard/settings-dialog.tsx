@@ -26,10 +26,15 @@ import { User } from "@prisma/client";
 interface UserSettingsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  user: User | null;
+  user: {
+    name: string;
+    email: string;
+    avatar: string;
+    is2FAEnabled?: boolean;
+  }
 }
 
-export function UserSettingsDialog({ isOpen, onOpenChange, user }: UserSettingsDialogProps) {
+export function SettingsDialog({ isOpen, onOpenChange, user }: UserSettingsDialogProps) {
   const { setTheme } = useTheme();
   const [twoFactorAuthEnabled, setTwoFactorAuthEnabled] = useState(user?.is2FAEnabled || false);
   const [loading, setLoading] = useState(false);

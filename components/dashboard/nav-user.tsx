@@ -14,6 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 
+import { ProfileDialog } from "./profile-dialog"
+import { SettingsDialog } from "./settings-dialog"
+import { useState } from "react"
+
 export function NavUser({
   user,
 }: {
@@ -25,6 +29,9 @@ export function NavUser({
 }) {
   const defaultAvatar = "/avatars/default.png"
   const { isMobile } = useSidebar()
+
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
 
   return (
     <SidebarMenu>
@@ -66,11 +73,11 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setIsProfileDialogOpen(true)}>
                 <BadgeCheck />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setIsSettingsDialogOpen(true)}>
                 <Settings />
                 Settings
               </DropdownMenuItem>
@@ -83,7 +90,25 @@ export function NavUser({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
-    </SidebarMenu>
+
+      {/* Profile Dialog */}
+      {user && (
+        <ProfileDialog
+          isOpen={isProfileDialogOpen}
+          onOpenChange={setIsProfileDialogOpen}
+          user={user}
+        />
+      )}
+
+      {/* Settings Dialog */}
+      {user && (
+        <SettingsDialog
+          isOpen={isSettingsDialogOpen}
+          onOpenChange={setIsSettingsDialogOpen}
+          user={user}
+        />
+      )}
+    </SidebarMenu >
   )
 }
 

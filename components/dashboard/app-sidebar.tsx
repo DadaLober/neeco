@@ -55,7 +55,7 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user }: AppSidebarProps) {
   return (
-    <Sidebar variant="inset">
+    <Sidebar variant="sidebar">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
