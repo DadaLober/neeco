@@ -1,80 +1,70 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "sqlserver"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-  output   = "./generated/client"
-}
-
 model Department {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-
-  users     User[]
+  id        Int         @id @default(autoincrement())
+  name      String      @unique
   documents Documents[]
+  users     User[]
 }
 
 model User {
-  id           String  @id @default(cuid())
-  name         String
-  email        String  @unique
-  password     String
-  role         String  @default("USER")
-  image        String?
-  is2FAEnabled Boolean @default(false)
-  twoFASecret  String?
-
-  departmentId Int?
-  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  password       String
+  role           String         @default("USER")
+  image          String?
+  is2FAEnabled   Boolean        @default(false)
+  twoFASecret    String?
+  departmentId   Int?
   approvalRoleId Int?
-  approvalRole   ApprovalRole? @relation(fields: [approvalRoleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  isActive      Boolean        @default(true)
-  lastLogin     DateTime?
-  loginAttempts Int            @default(0)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  ApprovalStep  ApprovalStep[]
+  isActive       Boolean        @default(true)
+  lastLogin      DateTime?
+  loginAttempts  Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  ApprovalStep   ApprovalStep[]
+  approvalRole   ApprovalRole?  @relation(fields: [approvalRoleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department     Department?    @relation(fields: [departmentId], references: [id])
 }
 
 model Documents {
-  id             String      @id @default(cuid())
-  referenceNo    String      @unique
+  id             String         @id @default(cuid())
+  referenceNo    String         @unique
   documentType   String
   documentStatus String
   purpose        String
   supplier       String
-  oic            Boolean     @default(false)
+  oic            Boolean        @default(false)
   date           DateTime
   departmentId   Int?
-  department     Department? @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  approvalSteps ApprovalStep[]
+  approvalSteps  ApprovalStep[]
+  department     Department?    @relation(fields: [departmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model ApprovalRole {
   id           Int            @id @default(autoincrement())
   name         String         @unique
   sequence     Int            @unique
-  users        User[]
   ApprovalStep ApprovalStep[]
+  users        User[]
 }
 
 model ApprovalStep {
-  id         String    @id @default(cuid())
+  id         String       @id @default(cuid())
   documentId String
   roleId     Int
   userId     String?
-  status     String    @default("pending") // "pending", "approved", "rejected"
+  status     String       @default("pending")
   approvedAt DateTime?
-
-  document Documents    @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  role     ApprovalRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  user     User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  document   Documents    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  role       ApprovalRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user       User?        @relation(fields: [userId], references: [id])
 }

@@ -21,8 +21,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 
-import { User } from "@prisma/client";
-
 interface UserSettingsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
