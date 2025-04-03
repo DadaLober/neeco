@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Web-based Approval System
+
+Built for Neeco 2 Area 1, this web-based approval system provides a user-friendly interface for managing approval processes. It offers a clean and intuitive design, with a focus on ease of use and accessibility.
+
+## Features
+
+- Clean and minimal design
+- Dark mode support
+- Responsive layout for mobile and desktop
+- Easy navigation with shadcn sidebar
+- Built with Next.js App Router
+
+## Tech Stack
+
+The system is built using the following technologies:
+
+- React
+- Next.js
+- Shadcn
+- Tailwind CSS
+- TypeScript
+- Prisma ORM
+- MsSQL
 
 ## Getting Started
 
-First, run the development server:
+To get started with our documentation, please navigate through the sections using the sidebar. Here's a quick overview of the available sections:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Introduction**: An overview of the system
+- **Getting Started**: How to use, install, deploy, extend and customize the system
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up your environment variables
+4. Run the development server: `npm run dev`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Usage
 
-## Learn More
+After installation and configuration:
 
-To learn more about Next.js, take a look at the following resources:
+1. Access the system through your browser
+2. Login with your credentials
+3. Navigate through the system using the sidebar
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Contributions are welcome. Please fork the repository and submit a pull request with your changes.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[Specify your license here]

@@ -24,18 +24,6 @@ const data = {
       url: "/dashboard",
       icon: SquareTerminal,
       isActive: true,
-      items: [
-        {
-          title: "Introduction",
-          url: "/dashboard/introduction",
-          icon: Compass,
-        },
-        {
-          title: "Getting Started",
-          url: "/dashboard/getting-started",
-          icon: ArrowRight,
-        },
-      ],
     },
     {
       title: "Documents",
