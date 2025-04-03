@@ -1,7 +1,7 @@
 "use client"
 
 import type * as React from "react"
-import { BookOpen, HelpCircle, SquareTerminal, Users, ArrowRight, Compass } from "lucide-react"
+import { BookOpen, HelpCircle, SquareTerminal, Users } from "lucide-react"
 
 import { NavMain } from "./nav-main"
 import { NavSecondary } from "./nav-secondary"
