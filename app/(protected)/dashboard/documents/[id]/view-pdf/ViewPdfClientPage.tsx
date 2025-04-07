@@ -59,41 +59,37 @@ export default function ViewPdfClientPage({
 
     return (
         <div className="flex flex-col flex-grow">
-            {/*  Header Section */}
-            <div className={`flex items-center justify-between p-4 border-b relative ${headerClassName}`}>
-                {/*  Back Button */}
-                <div className="absolute left-4">
-                    <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                    >
-                        <Link href={backButtonHref || defaultBackHref}>
-                            {customBackIcon || (
-                                <ArrowLeft className="mr-2 h-4 w-4" />
-                            )}
-                            Back
-                        </Link>
-                    </Button>
-                </div>
+            {/* Back Button Section - Moved to top right */}
+            <div className="flex justify-end p-2">
+                <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                >
+                    <Link href={backButtonHref || defaultBackHref}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back
+                    </Link>
+                </Button>
+            </div>
 
+            {/*  Header Section */}
+            <div className={`flex items-center justify-center p-4 border-b ${headerClassName}`}>
                 {/*  Document Title Section */}
-                <div className="flex-grow flex justify-center items-center">
-                    <div className="text-lg font-semibold">
-                        {document.referenceNo}
-                        {showItemType && (
-                            <span className="text-sm text-gray-500 ml-2">
-                                {document.itemType}
-                            </span>
-                        )}
-                        {showStatus && (
-                            <span
-                                className={`ml-2 px-2 py-1 text-sm font-medium border rounded ${getStatusStyle(document.itemStatus)}`}
-                            >
-                                {document.itemStatus}
-                            </span>
-                        )}
-                    </div>
+                <div className="text-lg font-semibold">
+                    {document.referenceNo}
+                    {showItemType && (
+                        <span className="text-sm text-gray-500 ml-2">
+                            {document.itemType}
+                        </span>
+                    )}
+                    {showStatus && (
+                        <span
+                            className={`ml-2 px-2 py-1 text-sm font-medium border rounded ${getStatusStyle(document.itemStatus)}`}
+                        >
+                            {document.itemStatus}
+                        </span>
+                    )}
                 </div>
             </div>
 
