@@ -31,9 +31,7 @@ export default async function DashboardPage() {
     oic: true,
     date: new Date(),
     departmentId: 1
-  }
-
-  ];
+  }];
 
   const result = await addDocuments(test);
   console.log(result);

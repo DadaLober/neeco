@@ -2,10 +2,11 @@
 
 import { z } from 'zod';
 import { auth } from '@/auth';
-import { DocumentsSchema, IdSchema, UnauthorizedResponse } from '@/schemas';
+import { IdSchema, UnauthorizedResponse } from '@/schemas';
 import { isUserOrAdmin } from './roleActions';
 import { addDocumentsInDB, deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './queries';
 import { Documents } from '@prisma/client';
+import { DocumentsSchema } from '@/schemas/validateDocument';
 
 const statusSchema = z.string().min(1).max(50);
 
