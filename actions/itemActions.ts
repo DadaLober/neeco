@@ -2,9 +2,9 @@
 
 import { z } from 'zod';
 import { auth } from '@/auth';
-import { IdSchema, UnauthorizedResponse } from '@/schemas';
+import { DocumentsSchema, IdSchema, UnauthorizedResponse } from '@/schemas';
 import { isUserOrAdmin } from './roleActions';
-import { deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './queries';
+import { addDocumentsInDB, deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './queries';
 import { Documents } from '@prisma/client';
 
 const statusSchema = z.string().min(1).max(50);
@@ -68,3 +68,29 @@ export async function deleteDocuments(documentId: string): Promise<Documents | U
     return deleteDocumentsInDB(documentId);
 }
 
+export async function addDocuments(documents: unknown): Promise<number | UnauthorizedResponse> {
+    const session = await auth();
+
+    if (!(await isUserOrAdmin(session))) {
+        return { error: "Unauthorized" };
+    }
+
+    try {
+        const parseResult = DocumentsSchema.safeParse(documents);
+
+        if (!parseResult.success) {
+            return {
+                error: "Validation failed: " + parseResult.error.errors
+                    .map(err => `${err.path.join('.')}: ${err.message}`)
+                    .join(', ')
+            };
+        }
+
+        const validatedDocuments = parseResult.data;
+
+        return await addDocumentsInDB(validatedDocuments);
+    } catch (error) {
+        console.error("Error processing documents:", error);
+        return { error: "Failed to process documents - " + error };
+    }
+}

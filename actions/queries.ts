@@ -192,3 +192,11 @@ export async function updateUserInDB(userId: string, data: Partial<User>): Promi
         data: data
     });
 }
+
+export async function addDocumentsInDB(documents: Omit<Documents, 'id'>[]): Promise<number> {
+    const result = await prisma.documents.createMany({
+        data: documents
+    });
+
+    return result.count;
+}

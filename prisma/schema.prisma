@@ -37,7 +37,7 @@ model User {
 
 model Documents {
   id             String         @id @default(cuid())
-  referenceNo    String         @unique
+  referenceNo    String
   documentType   String
   documentStatus String
   purpose        String

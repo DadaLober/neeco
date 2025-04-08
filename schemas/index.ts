@@ -30,10 +30,16 @@ export const registerSchema = z.object({
     path: ["confirmPassword"],
 })
 
-export const DocumentTypeSchema = z.enum(['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',
-    'PO', 'RET', 'RM', 'RR', 'RS', 'RV', 'SA', 'SOP', 'ST', 'TMZ', 'TO', 'TOA']);
+export const DocumentTypeSchema = z.string().refine(
+    (val) => ['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',
+        'PO', 'RET', 'RM', 'RR', 'RS', 'RV', 'SA', 'SOP', 'ST', 'TMZ', 'TO', 'TOA'].includes(val),
+    { message: "Invalid document type" }
+);
 
-export const DocumentStatusSchema = z.enum(['APP', 'AUD', 'CHK', 'CON', 'FPO', 'NOC', 'NOT', 'PRV', 'RCV', 'REC', 'REQ', 'VER']);
+export const DocumentStatusSchema = z.string().refine(
+    (val) => ['APP', 'AUD', 'CHK', 'CON', 'FPO', 'NOC', 'NOT', 'PRV', 'RCV', 'REC', 'REQ', 'VER'].includes(val),
+    { message: "Invalid document status" }
+);
 
 // File validation schemas and types
 export interface ValidationError {
@@ -163,5 +169,20 @@ export function analyzeFileContent(content: string): FileAnalysis {
         };
     }
 }
+
+const DocumentSchema = z.object({
+    referenceNo: z.string().min(1, "Reference number is required"),
+    documentType: DocumentTypeSchema,
+    documentStatus: DocumentStatusSchema,
+    purpose: z.string().min(1, "Purpose is required"),
+    supplier: z.string().min(1, "Supplier is required"),
+    oic: z.boolean(),
+    date: z.date(),
+    departmentId: z.number().nullable()
+});
+
+export const DocumentsSchema = z.array(DocumentSchema)
+    .min(1, "At least one document is required")
+    .max(500, "Maximum 500 documents can be processed at once");
 
 // export const UserStatusSchema = z.boolean();
