@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useDashboard } from "@/hooks/use-dashboard"
+import { addDocuments } from "@/actions/itemActions"
 
 export function Dashboard() {
+
     const {
         fileContent,
         fileName,
@@ -18,9 +20,9 @@ export function Dashboard() {
         isProcessing,
         showErrors,
         handleFileContent,
-        handleSubmit,
         toggleShowErrors,
-    } = useDashboard()
+        handleSubmit
+    } = useDashboard({ addDocuments })
 
     return (
         <div className="container mx-auto px-4 py-6 flex flex-col gap-6">

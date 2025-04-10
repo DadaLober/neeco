@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+export interface ValidationError {
+    line: number;
+    message: string;
+    row: string;
+}
+
+export interface FileAnalysis {
+    projectedRows: number;
+    invalidRows: number;
+    errors: ValidationError[];
+    analyzed: boolean;
+}
+
 // Document type
 export const DocumentTypeSchema = z.string().refine(
     (val) => ['APV', 'BOM', 'BR', 'CA', 'COC', 'CV', 'ICT', 'IS', 'KMCT', 'MC', 'MRV', 'PM',
@@ -71,19 +84,6 @@ export const DocumentsSchema = z.array(DocumentSchema)
 export type Document = z.infer<typeof DocumentSchema>;
 export type Documents = z.infer<typeof DocumentsSchema>;
 
-export interface ValidationError {
-    line: number;
-    message: string;
-    row: string;
-}
-
-export interface FileAnalysis {
-    projectedRows: number;
-    invalidRows: number;
-    errors: ValidationError[];
-    analyzed: boolean;
-}
-
 export function analyzeFileContent(content: string): FileAnalysis {
     const rows = content.split("\n").filter((row) => row.trim().length > 0);
     const errors: ValidationError[] = [];
@@ -150,4 +150,49 @@ export function analyzeFileContent(content: string): FileAnalysis {
         errors,
         analyzed: true,
     };
+}
+
+export function parseFileContent(content: string): Document[] {
+    const rows = content.split("\n").filter((row) => row.trim().length > 0);
+    const validDocuments: Document[] = [];
+
+    rows.forEach((rawRow) => {
+        // Split by semicolons and remove surrounding quotes
+        const columns = rawRow
+            .split(";")
+            .map((col) => col.trim().replace(/^"|"$/g, ""));
+
+        if (columns.length < 7 || columns.length > 8) {
+            return;
+        }
+
+        const [
+            referenceNo,
+            documentType,
+            documentStatus,
+            purpose,
+            supplier,
+            oic,
+            dateStr,
+            departmentId,
+        ] = columns;
+
+        // validate and parse
+        const result = DocumentSchema.safeParse({
+            referenceNo,
+            documentType,
+            documentStatus,
+            purpose,
+            supplier,
+            oic,
+            date: dateStr,
+            departmentId: departmentId || null,
+        });
+
+        if (result.success) {
+            validDocuments.push(result.data);
+        }
+    });
+
+    return validDocuments;
 }

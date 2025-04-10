@@ -1,7 +1,14 @@
-import { analyzeFileContent, FileAnalysis } from "@/schemas/validateDocument"
-import { useState } from "react"
+'use client'
 
-export function useDashboard() {
+import { analyzeFileContent, FileAnalysis, parseFileContent } from "@/schemas/validateDocument"
+import { useState } from "react"
+import { UnauthorizedResponse } from "@/schemas"
+
+interface Props {
+    addDocuments: (documents: unknown) => Promise<number | UnauthorizedResponse>
+}
+
+export function useDashboard({ addDocuments }: Props) {
     const [fileContent, setFileContent] = useState<string | null>(null)
     const [fileName, setFileName] = useState<string | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
@@ -36,17 +43,18 @@ export function useDashboard() {
 
         setIsProcessing(true)
         try {
-            console.log("Submitting file:", fileName)
-            console.log("Projected rows to insert:", analysis.projectedRows)
+            // Parse
+            const parsedData = parseFileContent(fileContent);
 
-            await new Promise(resolve => setTimeout(resolve, 1000))
+            //Call
+            await addDocuments(parsedData);
 
-            alert(`File submitted successfully! ${analysis.projectedRows} rows will be processed.`)
+            alert(`File submitted successfully! ${parsedData.length} rows processed.`);
         } catch (error) {
-            console.error("Error submitting file:", error)
-            alert("Failed to submit file")
+            console.error("Error submitting file:", error);
+            alert("Failed to submit file: " + (error instanceof Error ? error.message : "Unknown error"));
         } finally {
-            setIsProcessing(false)
+            setIsProcessing(false);
         }
     }
 

@@ -12,29 +12,5 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const test: Omit<Documents, 'id'>[] = [{
-    referenceNo: "123456789021",
-    documentType: "APV",
-    documentStatus: "APP",
-    purpose: "Purpose",
-    supplier: "Supplier",
-    oic: true,
-    date: new Date(),
-    departmentId: 1
-  },
-  {
-    referenceNo: "123456789022",
-    documentType: "APV",
-    documentStatus: "APP",
-    purpose: "Purpose",
-    supplier: "Supplier",
-    oic: true,
-    date: new Date(),
-    departmentId: 1
-  }];
-
-  const result = await addDocuments(test);
-  console.log(result);
-
   return <Dashboard />
 }
