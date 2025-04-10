@@ -15,7 +15,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
 import { ApprovalTimeline } from "@/components/users/approval-timeline"
 import { prisma as db } from "@/lib/prisma"
 
@@ -86,7 +85,7 @@ export async function getDocumentById(id: string): Promise<TransformedDocument |
             oic: document.oic,
             supplier: document.supplier,
             purpose: document.purpose,
-            totalApprovalSteps: document.approvalSteps.length,
+            totalApprovalSteps: Array.from(new Set(document.approvalSteps.map(step => step.role.id))).length,
             approvalSteps: document.approvalSteps
         };
     } catch (error) {
@@ -110,11 +109,6 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         notFound();
     }
 
-    const getCurrentApproverStep = () => {
-        // Find the first pending step
-        return document.approvalSteps.find((step) => step.status === "pending");
-    }
-
     type BadgeVariant = "default" | "destructive" | "outline" | "secondary";
 
     // Get status badge variant based on status
@@ -131,23 +125,40 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         }
     }
 
-    // Calculate document approval progress percentage
     const calculateApprovalProgress = () => {
-        // Count approved steps
-        const approvedSteps = document.approvalSteps.filter((step) => step.status === "approved").length
+        // Create a map to track the highest status per role
+        const roleStatusMap = new Map<number, string>()
 
-        // For rejected documents, show progress up to the rejection point
-        if (document.itemStatus.toLowerCase() === "rejected") {
-            const rejectedStepIndex = document.approvalSteps.findIndex((step) => step.status === "rejected")
-            if (rejectedStepIndex !== -1) {
-                // Progress is the approved steps as a percentage of steps up to and including the rejected step
-                return (approvedSteps / (rejectedStepIndex + 1)) * 100
+        document.approvalSteps.forEach(step => {
+            const roleId = step.role.id
+            if (!roleStatusMap.has(roleId)) {
+                roleStatusMap.set(roleId, step.status)
+            } else {
+                const currentStatus = roleStatusMap.get(roleId)
+                // Prioritize "approved" > "pending" > "rejected"
+                if (
+                    currentStatus === "pending" && step.status === "approved" ||
+                    currentStatus === "rejected" && step.status === "approved"
+                ) {
+                    roleStatusMap.set(roleId, "approved")
+                }
             }
+        })
+
+        const uniqueRoles = roleStatusMap.size
+        const approvedRoles = Array.from(roleStatusMap.values()).filter(status => status === "approved").length
+
+        // For rejected, cap progress at rejection point
+        if (document.itemStatus.toLowerCase() === "rejected") {
+            const rejectionIndex = document.approvalSteps.findIndex(s => s.status === "rejected")
+            const rejectedRoleId = document.approvalSteps[rejectionIndex]?.role.id
+            const indexInUniqueRoles = Array.from(roleStatusMap.keys()).indexOf(rejectedRoleId)
+            return (approvedRoles / (indexInUniqueRoles + 1)) * 100
         }
 
-        // For other statuses, show progress as a percentage of total steps
-        return (approvedSteps / document.totalApprovalSteps) * 100
+        return (approvedRoles / uniqueRoles) * 100
     }
+
 
     // Determine if the current user can approve/reject
     // In a real app, this would check the user's role against the current approval step
@@ -230,9 +241,6 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                                     View PDF
                                 </Link>
                             </Button>
-                            {/* <Button variant="outline" className="w-auto" asChild>
-                                <Link href={`/documents/${document.id}/edit`}>Edit Document</Link>
-                            </Button> */}
                         </CardFooter>
                     </Card>
 
@@ -250,8 +258,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Approval Status</CardTitle>
-                            <CardDescription>Current progress through approval workflow</CardDescription>
+                            <CardTitle>Current Progress</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -269,50 +276,6 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                                             style={{ width: `${calculateApprovalProgress()}%` }}
                                         />
                                     </div>
-                                </div>
-
-                                <Separator />
-
-                                <div>
-                                    <h4 className="text-sm font-medium mb-3">Current Approver</h4>
-                                    {document.itemStatus.toLowerCase() !== "approved" && document.itemStatus.toLowerCase() !== "rejected" ? (
-                                        <div className="bg-muted p-3 rounded-md">
-                                            {(() => {
-                                                const currentStep = getCurrentApproverStep();
-                                                if (currentStep && currentStep.user) {
-                                                    return (
-                                                        <>
-                                                            <p className="font-medium">{currentStep.role.name}</p>
-                                                            <p className="text-sm text-primary mt-1">{currentStep.user.name}</p>
-                                                            <p className="text-xs text-muted-foreground mt-1">Waiting for approval</p>
-                                                        </>
-                                                    );
-                                                } else if (currentStep) {
-                                                    return (
-                                                        <>
-                                                            <p className="font-medium">{currentStep.role.name}</p>
-                                                            <p className="text-xs text-muted-foreground mt-1">No approver assigned</p>
-                                                        </>
-                                                    );
-                                                } else {
-                                                    return (
-                                                        <p className="font-medium">No pending approvals found</p>
-                                                    );
-                                                }
-                                            })()}
-                                        </div>
-                                    ) : (
-                                        <div className="bg-muted p-3 rounded-md">
-                                            <p className="font-medium">
-                                                {document.itemStatus.toLowerCase() === "approved" ? "All approvals complete" : "Process halted"}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                {document.itemStatus.toLowerCase() === "approved"
-                                                    ? "Document has been fully approved"
-                                                    : "Document requires attention"}
-                                            </p>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </CardContent>

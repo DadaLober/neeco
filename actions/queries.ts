@@ -194,9 +194,71 @@ export async function updateUserInDB(userId: string, data: Partial<User>): Promi
 }
 
 export async function addDocumentsInDB(documents: Omit<Documents, 'id'>[]): Promise<number> {
-    const result = await prisma.documents.createMany({
-        data: documents
-    });
+    try {
+        let insertedCount = 0;
 
-    return result.count;
+        await prisma.$transaction(async (tx) => {
+            for (const doc of documents) {
+                // 1. Create the document
+                const createdDoc = await tx.documents.create({
+                    data: doc
+                });
+
+                if (doc.departmentId) {
+                    const approvers = await tx.user.findMany({
+                        where: {
+                            departmentId: doc.departmentId,
+                            NOT: { approvalRoleId: null }
+                        },
+                        include: {
+                            approvalRole: true
+                        },
+                        orderBy: {
+                            approvalRole: {
+                                sequence: 'asc'
+                            }
+                        }
+                    });
+
+                    const allRoles = await tx.approvalRole.findMany({
+                        orderBy: { sequence: 'asc' }
+                    });
+
+                    const assignedRoleIds = new Set();
+
+                    for (const approver of approvers) {
+                        await tx.approvalStep.create({
+                            data: {
+                                documentId: createdDoc.id,
+                                roleId: approver.approvalRoleId!,
+                                userId: approver.id, // Pre-assign the user
+                                status: 'pending'
+                            }
+                        });
+
+                        assignedRoleIds.add(approver.approvalRoleId);
+                    }
+
+                    for (const role of allRoles) {
+                        if (!assignedRoleIds.has(role.id)) {
+                            await tx.approvalStep.create({
+                                data: {
+                                    documentId: createdDoc.id,
+                                    roleId: role.id,
+                                    status: 'pending'
+                                }
+                            });
+                        }
+                    }
+                }
+
+                insertedCount++;
+            }
+        });
+
+        return insertedCount;
+    } catch (error) {
+        console.error("Database error adding documents:", error);
+        throw error;
+    }
 }
