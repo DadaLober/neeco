@@ -4,6 +4,7 @@ import { UserRoleSchema } from "@/schemas";
 import { User } from "@prisma/client";
 import { Session } from "next-auth";
 import { getUserByIDFromDB } from "./queries";
+import { TransformedDocument } from "@/app/(protected)/dashboard/documents/[id]/page";
 
 // Check if a user has admin privileges
 export async function isAdmin(session: Session | null): Promise<boolean> {
@@ -24,4 +25,17 @@ export async function getSelf(session: Session | null): Promise<User | null> {
   }
   const self = await getUserByIDFromDB(session.user.id);
   return self;
+}
+
+export async function checkUserRoleAndDept(document: TransformedDocument, currentUser: { id: string, role: string, approvalRoleId: number | null }) {
+  const nextApprovalStep = document.approvalSteps.find(
+    step => (step.status === "pending" || step.status === "in progress")
+  );
+
+  if (!nextApprovalStep) {
+    return false;
+  }
+  const isCorrectRole = currentUser.approvalRoleId === nextApprovalStep.role.id;
+
+  return isCorrectRole;
 }

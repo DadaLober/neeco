@@ -17,6 +17,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Badge } from "@/components/ui/badge"
 import { ApprovalTimeline } from "@/components/users/approval-timeline"
 import { prisma as db } from "@/lib/prisma"
+import { checkUserRoleAndDept, getSelf } from "@/actions/roleActions"
+import { auth } from "@/auth"
 
 export type TransformedDocument = {
     id: string;
@@ -43,6 +45,12 @@ export type TransformedDocument = {
         status: string;
     }>;
 }
+
+type CurrentUser = {
+    id: string;
+    role: string;
+    approvalRoleId: number | null;
+};
 
 export async function getDocumentById(id: string): Promise<TransformedDocument | null> {
     try {
@@ -95,7 +103,14 @@ export async function getDocumentById(id: string): Promise<TransformedDocument |
 }
 
 export default async function DocumentPage({ params }: { params: Promise<{ id: string }> | undefined }) {
-    // Handle both Promise and direct object cases
+    const session = await auth();
+    const fullUser = await getSelf(session);
+
+    if (!fullUser) {
+        throw new Error("User not found");
+    }
+
+    const currentUser: Pick<CurrentUser, 'id' | 'role' | 'approvalRoleId'> = fullUser;
     const resolvedParams = params ? await params : undefined;
     const id = resolvedParams?.id;
 
@@ -161,8 +176,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
 
 
     // Determine if the current user can approve/reject
-    // In a real app, this would check the user's role against the current approval step
-    const canApproveOrReject = document.itemStatus.toLowerCase() === "pending" || document.itemStatus.toLowerCase() === "in progress"
+    const canApprove = await checkUserRoleAndDept(document, currentUser);
 
     return (
         <>
@@ -279,7 +293,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                                 </div>
                             </div>
                         </CardContent>
-                        {canApproveOrReject && (
+                        {canApprove && (
                             <CardFooter className="flex flex-col gap-3 pt-4 border-t">
                                 <Button className="w-full bg-green-600 hover:bg-green-700" asChild>
                                     <Link href={`/documents/${document.id}/view-pdf`}>
