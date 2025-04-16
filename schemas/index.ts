@@ -3,7 +3,9 @@ import { z } from "zod"
 export type UnauthorizedResponse = { error: string }
 
 export type ServerError = {
-    code: 'UNAUTHORIZED' | 'INVALID_INPUT' | 'NOT_FOUND' | 'DATABASE_ERROR';
+    code: 'UNAUTHORIZED' | 'INVALID_INPUT' | 'NOT_FOUND'
+    | 'DATABASE_ERROR' | 'COOKIE_ERROR' | 'UNKNOWN_ERROR'
+    | 'AUTHENTICATION_ERROR' | 'SERVER_ERROR';
     message: string;
 }
 

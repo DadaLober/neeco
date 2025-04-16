@@ -13,6 +13,9 @@ import { validateId, ActionResult } from '@/schemas';
 import { ApprovalRole, Department } from '@prisma/client';
 import { checkAdminAccess } from './roleActions';
 
+/**
+ * Retrieves all users with their relations from the database
+ */
 export async function getAllUsers(): Promise<ActionResult<UserWithRelations[]>> {
   const adminError = await checkAdminAccess();
   if (adminError) {
@@ -33,6 +36,9 @@ export async function getAllUsers(): Promise<ActionResult<UserWithRelations[]>> 
   }
 }
 
+/**
+ * Deletes a specific user by ID
+ */
 export async function deleteUser(userId: string): Promise<ActionResult<null>> {
   const adminError = await checkAdminAccess();
   if (adminError) {
@@ -73,6 +79,9 @@ export async function deleteUser(userId: string): Promise<ActionResult<null>> {
   }
 }
 
+/**
+ * Updates user information by ID
+ */
 export async function updateUser(userId: string, data: EditableUser): Promise<ActionResult<EditableUser>> {
   const adminError = await checkAdminAccess();
   if (adminError) {
@@ -113,6 +122,9 @@ export async function updateUser(userId: string, data: EditableUser): Promise<Ac
   }
 }
 
+/**
+ * Retrieves all departments from the database
+ */
 export async function getAllDepartments(): Promise<ActionResult<Department[]>> {
   const adminError = await checkAdminAccess();
   if (adminError) {
@@ -133,6 +145,9 @@ export async function getAllDepartments(): Promise<ActionResult<Department[]>> {
   }
 }
 
+/**
+ * Retrieves all approval roles from the database
+ */
 export async function getAllApprovalRoles(): Promise<ActionResult<ApprovalRole[]>> {
   const adminError = await checkAdminAccess();
   if (adminError) {

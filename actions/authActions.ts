@@ -1,121 +1,205 @@
 "use server"
 
 import { hash } from "bcrypt";
-import { z } from "zod";
-import { cookies } from "next/headers";
 import { AuthError } from "next-auth";
+import { cookies } from "next/headers";
 import { auth, signIn } from "@/auth";
-import { loginSchema, registerSchema, UnauthorizedResponse } from "@/schemas";
+import { ActionResult, loginSchema, registerSchema } from "@/schemas";
 import { createUserInDB, getUserByEmailFromDB, setLastLoginInDB, setLoginAttemptsInDB } from "./queries";
 import { isUserOrAdmin } from "./roleActions";
 
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = typeof loginSchema._type;
+export type RegisterInput = typeof registerSchema._type;
 
-export async function login(values: LoginInput):
-    Promise<{ success: true, requires2FA: boolean, callbackUrl: string } | UnauthorizedResponse> {
-    const result = loginSchema.safeParse(values);
+type LoginResult = {
+    requires2FA: boolean;
+    callbackUrl: string;
+};
 
-    if (!result.success) {
-        return { error: "Invalid input" };
+const DASHBOARD_URL = "/dashboard";
+const LOGIN_URL = "/login";
+
+/**
+ * Authenticates a user and handles 2FA if enabled
+ */
+export async function login(values: LoginInput): Promise<ActionResult<LoginResult>> {
+    const validatedInput = loginSchema.safeParse(values);
+
+    if (!validatedInput.success) {
+        return {
+            success: false,
+            error: {
+                code: "INVALID_INPUT",
+                message: "Please provide valid credentials"
+            }
+        };
     }
 
-    const redirectUrl = "/dashboard";
-
     try {
-        const user = await getUserByEmailFromDB(values.email)
+        const { email, password } = validatedInput.data;
+        const user = await getUserByEmailFromDB(email);
 
         if (!user) {
-            return { error: "Invalid email or password" };
+            return {
+                success: false,
+                error: {
+                    code: "AUTHENTICATION_ERROR",
+                    message: "Invalid email or password"
+                }
+            };
         }
 
-        setLastLoginInDB(values.email)
+        try {
+            await signIn("credentials", { email, password, redirect: false });
+            await setLastLoginInDB(email);
+        } catch (error) {
+            if (error instanceof AuthError) {
+                await setLoginAttemptsInDB(email);
 
-        await signIn("credentials", {
-            email: values.email, password: values.password, redirect: false
-        });
+                return {
+                    success: false,
+                    error: {
+                        code: "AUTHENTICATION_ERROR",
+                        message: error.type === "CredentialsSignin"
+                            ? "Invalid email or password"
+                            : "Authentication failed"
+                    }
+                };
+            }
+            throw error;
+        }
 
         if (user.is2FAEnabled) {
-            try {
-                (await cookies()).set("2fa_enabled", "true", {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite: "strict",
-                    path: "/",
-                    maxAge: 60 * 15 // 15 minutes,
-                });
-                return {
-                    success: true,
-                    requires2FA: true,
-                    callbackUrl: redirectUrl
-                };
-            } catch (error) {
-                console.error("Error setting 2FA cookie:", error);
-                return { error: "Something went wrong" };
-            }
+            return await setup2FASession(DASHBOARD_URL);
         }
 
         return {
             success: true,
-            requires2FA: false,
-            callbackUrl: redirectUrl
+            data: {
+                requires2FA: false,
+                callbackUrl: DASHBOARD_URL
+            }
         };
     } catch (error) {
-        if (error instanceof AuthError) {
-            await setLoginAttemptsInDB(values.email);
-
-            switch (error.type) {
-                case "CredentialsSignin":
-                    return { error: "Invalid email or password" };
-                default:
-                    return { error: "Something went wrong" };
+        return {
+            success: false,
+            error: {
+                code: "SERVER_ERROR",
+                message: "Failed to process login"
             }
-        }
-        throw error;
+        };
     }
 }
 
-export async function complete2FALogin(): Promise<{ callbackUrl: string } | UnauthorizedResponse> {
+/**
+ * Completes the 2FA authentication flow
+ */
+export async function complete2FALogin(): Promise<ActionResult<{ callbackUrl: string }>> {
     const session = await auth();
 
     if (!(await isUserOrAdmin(session))) {
-        return { error: "Unauthorized" }
+        return {
+            success: false,
+            error: {
+                code: "UNAUTHORIZED",
+                message: "You must be logged in to complete 2FA"
+            }
+        };
     }
-
-    const redirectUrl = "/dashboard";
 
     try {
         await (await cookies()).delete("2fa_enabled");
-    } catch (error) {
-        console.error("Error deleting 2FA cookie:", error);
-        return { error: "Something went wrong" };
-    }
 
-    return { callbackUrl: redirectUrl };
+        return {
+            success: true,
+            data: { callbackUrl: DASHBOARD_URL }
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: {
+                code: "COOKIE_ERROR",
+                message: "Failed to complete authentication"
+            }
+        };
+    }
 }
 
-export async function register(values: RegisterInput): Promise<{ callbackUrl: string } | UnauthorizedResponse> {
-    const result = registerSchema.safeParse(values);
+/**
+ * Registers a new user
+ */
+export async function register(values: RegisterInput): Promise<ActionResult<{ callbackUrl: string }>> {
+    const validatedInput = registerSchema.safeParse(values);
 
-    if (!result.success) {
-        return { error: "Invalid input" };
+    if (!validatedInput.success) {
+        return {
+            success: false,
+            error: {
+                code: "INVALID_INPUT",
+                message: "Please provide valid registration information"
+            }
+        };
     }
 
-    const redirectUrl = "/login";
-
     try {
-        const existingUser = await getUserByEmailFromDB(values.email);
+        const { name, email, password } = validatedInput.data;
+        const existingUser = await getUserByEmailFromDB(email);
 
         if (existingUser) {
-            return { error: "Email already in use" };
+            return {
+                success: false,
+                error: {
+                    code: "INVALID_INPUT",
+                    message: "This email is already registered"
+                }
+            };
         }
 
-        const hashedPassword = await hash(values.password, 10);
+        const hashedPassword = await hash(password, 10);
+        await createUserInDB(name, email, hashedPassword);
 
-        await createUserInDB(values.name, values.email, hashedPassword);
-
-        return { callbackUrl: redirectUrl };
+        return {
+            success: true,
+            data: { callbackUrl: LOGIN_URL }
+        };
     } catch (error) {
-        return { error: "Something went wrong" };
+        return {
+            success: false,
+            error: {
+                code: "SERVER_ERROR",
+                message: "Failed to create account"
+            }
+        };
+    }
+}
+
+/**
+ * Helper function to set up 2FA session
+ */
+async function setup2FASession(redirectUrl: string): Promise<ActionResult<LoginResult>> {
+    try {
+        (await cookies()).set("2fa_enabled", "true", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            path: "/",
+            maxAge: 60 * 15 // 15 minutes
+        });
+
+        return {
+            success: true,
+            data: {
+                requires2FA: true,
+                callbackUrl: redirectUrl
+            }
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: {
+                code: "COOKIE_ERROR",
+                message: "Failed to set up two-factor authentication"
+            }
+        };
     }
 }
