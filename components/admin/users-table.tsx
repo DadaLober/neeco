@@ -1,33 +1,27 @@
 "use client"
 
 import { useState } from "react"
-import { CardTable } from "@/components/ui/card-table"
-import type { User, Department, ApprovalRole } from "@prisma/client"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog"
-import { toast } from "sonner"
+import { CardTable } from "@/components/ui/card-table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-export type UserWithRelations = Partial<User> & {
-    department?: Department | null
-    approvalRole?: ApprovalRole | null
-}
+import type { EditableUser, UserWithRelations } from "@/actions/queries"
+import { getAllUsers, getAllDepartments, getAllApprovalRoles, deleteUser, updateUser } from "@/actions/adminActions"
 
 type UsersTableProps = {
-    users: UserWithRelations[]
-    deleteAction: (userId: string) => Promise<void>
-    updateAction?: (userId: string, data: Partial<UserWithRelations>) => Promise<void>
-    departments?: Department[]
-    approvalRoles?: ApprovalRole[]
+    users: Awaited<ReturnType<typeof getAllUsers>>;
+    departments: Awaited<ReturnType<typeof getAllDepartments>>
+    approvalRoles: Awaited<ReturnType<typeof getAllApprovalRoles>>
 }
 
 export function UsersTable({
     users,
-    deleteAction,
-    updateAction,
-    departments = [],
-    approvalRoles = [],
+    departments,
+    approvalRoles,
 }: UsersTableProps) {
+    const router = useRouter()
     const roles = ["ADMIN", "USER"]
 
     // State for Delete Dialog
@@ -37,7 +31,7 @@ export function UsersTable({
 
     // State for Edit Dialog
     const [editDialogOpen, setEditDialogOpen] = useState(false)
-    const [editedUser, setEditedUser] = useState<UserWithRelations | null>(null)
+    const [editedUser, setEditedUser] = useState<EditableUser | null>(null)
 
     // State for Save Confirmation Dialog
     const [saveDialogOpen, setSaveDialogOpen] = useState(false)
@@ -54,24 +48,28 @@ export function UsersTable({
 
         setIsDeleteLoading(true)
         try {
-            await deleteAction(userToDelete.id)
+            const result = await deleteUser(userToDelete.id)
+
+            if (result && !result.success) {
+                console.error("Error deleting user:", result.error)
+                toast.error(result.error.message || "Failed to delete user")
+                return
+            }
+
+            router.refresh()
             toast.success(`User ${userToDelete.name} deleted successfully`)
             setDeleteDialogOpen(false)
         } catch (error) {
-            console.error("Error deleting user:", error)
+            console.error("Client error deleting user:", error)
             toast.error("Failed to delete user")
+
         } finally {
             setIsDeleteLoading(false)
         }
     }
 
-    // Handle Edit
-    const handleEditClick = (user: UserWithRelations) => {
-        setEditedUser({
-            ...user,
-            department: user.department,
-            approvalRole: user.approvalRole
-        })
+    const handleEditClick = (user: EditableUser) => {
+        setEditedUser(user)
         setEditDialogOpen(true)
     }
 
@@ -82,30 +80,43 @@ export function UsersTable({
 
     // Handle Save
     const handleSaveConfirm = async () => {
-        if (!editedUser?.id || !updateAction) return
+        if (!editedUser?.id) return
 
         setIsSaveLoading(true)
         try {
-            await updateAction(editedUser.id, {
-                role: editedUser.role,
-                departmentId: editedUser.departmentId,
-                approvalRoleId: editedUser.approvalRoleId,
-            })
+            const result = await updateUser(
+                editedUser.id,
+                {
+                    id: editedUser.id,
+                    name: editedUser.name,
+                    email: editedUser.email,
+                    role: editedUser.role,
+                    departmentId: editedUser.departmentId,
+                    approvalRoleId: editedUser.approvalRoleId
+                })
+
+            if (result && !result.success) {
+                console.error("Error updating user:", result.error)
+                toast.error(result.error.message || "Failed to update user")
+                return
+            }
+
+            router.refresh()
             toast.success(`User ${editedUser.name} updated successfully`)
             setSaveDialogOpen(false)
             setEditedUser(null)
         } catch (error) {
-            console.error("Error updating user:", error)
+            console.error("Client error updating user:", error)
             toast.error("Failed to update user")
+
         } finally {
             setIsSaveLoading(false)
         }
     }
-
     return (
         <>
             <CardTable
-                data={users}
+                data={users.success ? users.data : []}
                 title="Users"
                 description="A list of all users in your organization."
                 searchable
@@ -121,7 +132,7 @@ export function UsersTable({
                                         <AvatarImage src={user.image} alt={user.name || "User"} />
                                     ) : (
                                         <AvatarFallback className="bg-green-200">
-                                            {user?.name ? user.name[0]?.toUpperCase() : "?"}
+                                            {user.name ? user.name[0].toUpperCase() : "?"}
                                         </AvatarFallback>
                                     )}
                                 </Avatar>
@@ -151,7 +162,7 @@ export function UsersTable({
                         filterable: true,
                         filterAccessor: "department.name",
                         cell: (user) => (
-                            <div className="flex items-center gap-2">{user.department ? user.department.name : "None"}</div>
+                            <div className="flex items-center gap-2">{user.department?.name || "None"}</div>
                         ),
                     },
                     {
@@ -160,7 +171,7 @@ export function UsersTable({
                         filterable: true,
                         filterAccessor: "approvalRole.name",
                         cell: (user) => (
-                            <div className="flex items-center gap-2">{user.approvalRole ? user.approvalRole.name : "None"}</div>
+                            <div className="flex items-center gap-2">{user.approvalRole?.name || "None"}</div>
                         ),
                     },
                     {
@@ -214,7 +225,7 @@ export function UsersTable({
                             <label className="text-sm font-medium">Role</label>
                             <Select
                                 value={editedUser?.role || ""}
-                                onValueChange={(value) => setEditedUser((prev) => (prev ? { ...prev, role: value } : prev))}
+                                onValueChange={(value) => setEditedUser((prev) => prev ? { ...prev, role: value } : prev)}
                             >
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select role" />
@@ -232,16 +243,14 @@ export function UsersTable({
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Department</label>
                             <Select
-                                value={editedUser?.department?.id ? String(editedUser.department.id) : "none"}
+                                value={editedUser?.departmentId ? String(editedUser.departmentId) : "none"}
                                 onValueChange={(value) =>
                                     setEditedUser((prev) => {
                                         if (!prev) return prev
                                         const deptId = value === "none" ? null : Number.parseInt(value, 10)
-                                        const selectedDepartment = deptId ? departments.find((d) => d.id === deptId) || null : null
                                         return {
                                             ...prev,
-                                            departmentId: deptId,
-                                            department: selectedDepartment
+                                            departmentId: deptId
                                         }
                                     })
                                 }
@@ -251,7 +260,7 @@ export function UsersTable({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">None</SelectItem>
-                                    {departments.map((dept) => (
+                                    {departments.success && departments.data.map((dept) => (
                                         <SelectItem key={dept.id} value={String(dept.id)}>
                                             {dept.name}
                                         </SelectItem>
@@ -263,16 +272,14 @@ export function UsersTable({
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Approval Role</label>
                             <Select
-                                value={editedUser?.approvalRole?.id ? String(editedUser.approvalRole.id) : "none"}
+                                value={editedUser?.approvalRoleId ? String(editedUser.approvalRoleId) : "none"}
                                 onValueChange={(value) =>
                                     setEditedUser((prev) => {
                                         if (!prev) return prev
                                         const roleId = value === "none" ? null : Number.parseInt(value, 10)
-                                        const selectedRole = roleId ? approvalRoles.find((r) => r.id === roleId) || null : null
                                         return {
                                             ...prev,
-                                            approvalRoleId: roleId,
-                                            approvalRole: selectedRole
+                                            approvalRoleId: roleId
                                         }
                                     })
                                 }
@@ -282,7 +289,7 @@ export function UsersTable({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">None</SelectItem>
-                                    {approvalRoles.map((role) => (
+                                    {approvalRoles.success && approvalRoles.data.map((role) => (
                                         <SelectItem key={role.id} value={String(role.id)}>
                                             {role.name}
                                         </SelectItem>

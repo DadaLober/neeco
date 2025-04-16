@@ -2,15 +2,24 @@ import { z } from "zod"
 
 export type UnauthorizedResponse = { error: string }
 
+export type ServerError = {
+    code: 'UNAUTHORIZED' | 'INVALID_INPUT' | 'NOT_FOUND' | 'DATABASE_ERROR';
+    message: string;
+}
+
+export type ActionResult<T> =
+    | { success: true; data: T }
+    | { success: false; error: ServerError };
+
 export function validateRole(role: string): string | null {
     const parsedRole = UserRoleSchema.safeParse(role);
     return parsedRole.success ? parsedRole.data : null;
 }
 
 export const UserRoleSchema = z.enum(['USER', 'ADMIN']);
-export const IdSchema = z.string().cuid()
+export const validateId = z.string().uuid();
 export const otpSchema = z.string().length(6).regex(/^[0-9]+$/);
-export const numberSchema = z.number().min(1);
+export const validateInteger = z.number().min(1);
 export const loginSchema = z.object({
     email: z.string().email("Invalid email address"),
     password: z.string().min(1, "Password is required"),

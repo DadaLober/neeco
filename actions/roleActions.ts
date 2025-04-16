@@ -1,10 +1,11 @@
 'use server';
 
-import { UserRoleSchema } from "@/schemas";
+import { ServerError, UserRoleSchema } from "@/schemas";
 import { User } from "@prisma/client";
 import { Session } from "next-auth";
 import { getUserByIDFromDB } from "./queries";
 import { TransformedDocument } from "@/app/(protected)/dashboard/documents/[id]/page";
+import { auth } from "@/auth";
 
 // Check if a user has admin privileges
 export async function isAdmin(session: Session | null): Promise<boolean> {
@@ -16,6 +17,17 @@ export async function isAdmin(session: Session | null): Promise<boolean> {
 export async function isUserOrAdmin(session: Session | null): Promise<boolean> {
   const role = UserRoleSchema.safeParse(session?.user.role);
   return role.success && role.data === "USER" || role.data === "ADMIN";
+}
+
+export async function checkAdminAccess(): Promise<ServerError | null> {
+  const session = await auth();
+  if (!(await isAdmin(session))) {
+    return {
+      code: 'UNAUTHORIZED',
+      message: 'Admin access required',
+    };
+  }
+  return null;
 }
 
 // Get self object

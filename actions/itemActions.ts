@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { auth } from '@/auth';
-import { IdSchema, UnauthorizedResponse } from '@/schemas';
+import { validateId, UnauthorizedResponse } from '@/schemas';
 import { isUserOrAdmin } from './roleActions';
 import { addDocumentsInDB, deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './queries';
 import { Documents } from '@prisma/client';
@@ -27,7 +27,7 @@ export async function updateDocumentStatus(documentId: string, newStatus: string
         return { error: "Unauthorized" };
     }
 
-    const validDocumentsId = IdSchema.safeParse(documentId);
+    const validDocumentsId = validateId.safeParse(documentId);
     const validStatus = statusSchema.safeParse(newStatus);
 
     if (!validDocumentsId.success || !validStatus.success) {
@@ -44,7 +44,7 @@ export async function toggleDocumentsOIC(documentId: string): Promise<Documents 
         return { error: "Unauthorized" };
     }
 
-    const validDocumentsId = IdSchema.safeParse(documentId);
+    const validDocumentsId = validateId.safeParse(documentId);
 
     if (!validDocumentsId.success) {
         return { error: "Invalid document ID" };
@@ -60,7 +60,7 @@ export async function deleteDocuments(documentId: string): Promise<Documents | U
         return { error: "Unauthorized" };
     }
 
-    const validDocumentsId = IdSchema.safeParse(documentId);
+    const validDocumentsId = validateId.safeParse(documentId);
 
     if (!validDocumentsId.success) {
         throw new Error('Invalid document ID');

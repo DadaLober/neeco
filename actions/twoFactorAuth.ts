@@ -3,7 +3,7 @@
 import QRCode from "qrcode";
 import speakeasy from "speakeasy";
 import { auth } from "@/auth";
-import { IdSchema, otpSchema } from "@/schemas";
+import { validateId, otpSchema } from "@/schemas";
 import { isUserOrAdmin } from "./roleActions";
 import { disable2FAInDB, getUserByIDFromDB, setup2FAInDB, verify2FAInDB } from "./queries";
 
@@ -13,7 +13,7 @@ export async function setup2FA(): Promise<{ qrCodeDataURL: string } | { error: s
     if (!(await isUserOrAdmin(session)) || !session) {
         return { error: "Unauthorrized" };
     }
-    const parsedId = IdSchema.safeParse(session.user.id);
+    const parsedId = validateId.safeParse(session.user.id);
 
     if (!parsedId.success) {
         return { error: "Invalid user ID" };
@@ -76,7 +76,7 @@ export async function disable2FA(): Promise<{ success: boolean } | { error: stri
         return { error: "Unauthorrized" };
     }
 
-    const parsedId = IdSchema.safeParse(session.user.id);
+    const parsedId = validateId.safeParse(session.user.id);
 
     if (!parsedId.success) {
         return { error: "Invalid user ID" };

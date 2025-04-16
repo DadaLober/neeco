@@ -1,9 +1,36 @@
 import { prisma } from '@/lib/prisma';
 import { UnauthorizedResponse } from '@/schemas';
-import { User, Documents, Department, ApprovalRole } from '@prisma/client';
+import { User, Documents, Department, ApprovalRole, Prisma } from '@prisma/client';
+
+export type EditableUser = Prisma.UserGetPayload<{
+    select: {
+        id: true;
+        name: true;
+        email: true;
+        role: true;
+        departmentId: true;
+        approvalRoleId: true;
+    };
+}>;
+
+export type UserWithRelations = Prisma.UserGetPayload<{
+    select: {
+        id: true;
+        name: true;
+        email: true;
+        role: true;
+        lastLogin: true;
+        loginAttempts: true;
+        departmentId: true;
+        approvalRoleId: true;
+        image: true;
+        department: { select: { id: true, name: true } };
+        approvalRole: { select: { id: true, name: true, sequence: true } };
+    };
+}>;
 
 //Database functions
-export async function getAllUsersFromDB(): Promise<Partial<User>[]> {
+export async function getAllUsersQuery(): Promise<UserWithRelations[]> {
     return await prisma.user.findMany({
         select: {
             id: true,
@@ -13,6 +40,8 @@ export async function getAllUsersFromDB(): Promise<Partial<User>[]> {
             lastLogin: true,
             loginAttempts: true,
             image: true,
+            departmentId: true,
+            approvalRoleId: true,
             department: {
                 select: {
                     id: true,
@@ -30,13 +59,20 @@ export async function getAllUsersFromDB(): Promise<Partial<User>[]> {
     })
 }
 
-export async function deleteUserFromDB(userId: string): Promise<User> {
+export async function deleteUserQuery(userId: string): Promise<User> {
     return await prisma.user.delete({
         where: { id: userId },
     });
 }
 
-export async function getUserByEmailFromDB(email: string): Promise<User & { is2FAEnabled: boolean } | null> {
+export async function updateUserQuery(userId: string, data: EditableUser): Promise<EditableUser> {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: data
+    });
+}
+
+export async function getUserByEmailFromDB(email: string): Promise<User | null> {
     return await prisma.user.findUnique({
         where: { email: email },
     })
@@ -45,13 +81,6 @@ export async function getUserByEmailFromDB(email: string): Promise<User & { is2F
 export async function getUserByIDFromDB(userId: string): Promise<User & { twoFASecret: string | null } | null> {
     return await prisma.user.findUnique({
         where: { id: userId },
-    });
-}
-
-export async function setRoleInDB(userId: string, role: string): Promise<User> {
-    return await prisma.user.update({
-        where: { id: userId },
-        data: { role: role }
     });
 }
 
@@ -153,46 +182,6 @@ export async function disable2FAInDB(userId: string): Promise<User> {
     });
 }
 
-export async function setDepartmentInDB(userId: string, departmentId: number): Promise<User> {
-    return prisma.user.update({
-        where: { id: userId },
-        data: { departmentId: departmentId }
-    });
-}
-
-export async function setApprovalRoleInDB(userId: string, approvalRoleId: number): Promise<User> {
-    return prisma.user.update({
-        where: { id: userId },
-        data: { approvalRoleId: approvalRoleId }
-    });
-}
-
-export async function getAllDepartmentsFromDB(): Promise<Department[]> {
-    return prisma.department.findMany({
-        select: {
-            id: true,
-            name: true,
-        }
-    });
-}
-
-export async function getAllApprovalRolesFromDB(): Promise<ApprovalRole[]> {
-    return prisma.approvalRole.findMany({
-        select: {
-            id: true,
-            name: true,
-            sequence: true,
-        }
-    });
-}
-
-export async function updateUserInDB(userId: string, data: Partial<User>): Promise<User> {
-    return prisma.user.update({
-        where: { id: userId },
-        data: data
-    });
-}
-
 export async function addDocumentsInDB(documents: Omit<Documents, 'id'>[]): Promise<number> {
     try {
         let insertedCount = 0;
@@ -261,4 +250,23 @@ export async function addDocumentsInDB(documents: Omit<Documents, 'id'>[]): Prom
         console.error("Database error adding documents:", error);
         throw error;
     }
+}
+
+export async function getAllDepartmentsFromDB(): Promise<Department[]> {
+    return prisma.department.findMany({
+        select: {
+            id: true,
+            name: true,
+        }
+    });
+}
+
+export async function getAllApprovalRolesFromDB(): Promise<ApprovalRole[]> {
+    return prisma.approvalRole.findMany({
+        select: {
+            id: true,
+            name: true,
+            sequence: true,
+        }
+    });
 }

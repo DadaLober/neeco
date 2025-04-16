@@ -45,6 +45,7 @@ export function Dashboard() {
                                 <p>Expected format (each row):</p>
                                 referenceNo;documentType;documentStatus;purpose;supplier;OIC;date;departmentId?
                                 <code className="bg-gray-100 p-1 block rounded">
+                                    {/* eslint-disable-next-line react/no-unescaped-entities */}
                                     "DOC2021-TEST";"RV";"APP";"For office";"HP";false;2025-08-26T06:24:53.946286;1
                                 </code>
                             </div>

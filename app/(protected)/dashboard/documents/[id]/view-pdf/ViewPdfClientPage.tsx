@@ -43,7 +43,6 @@ export default function ViewPdfClientPage({
     document,
     pdfUrl = "https://www.rd.usda.gov/sites/default/files/pdf-sample_0.pdf",
     backButtonHref,
-    customBackIcon,
     showItemType = true,
     showStatus = true,
     headerClassName = "",
