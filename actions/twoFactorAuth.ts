@@ -5,7 +5,7 @@ import speakeasy from "speakeasy";
 import { auth } from "@/auth";
 import { validateId, otpSchema } from "@/schemas";
 import { isUserOrAdmin } from "./roleActions";
-import { disable2FAInDB, getUserByIDFromDB, setup2FAInDB, verify2FAInDB } from "./queries";
+import { disable2FAInDB, getUserByIDQuery, setup2FAInDB, verify2FAInDB } from "./queries";
 
 export async function setup2FA(): Promise<{ qrCodeDataURL: string } | { error: string }> {
     const session = await auth();
@@ -48,7 +48,7 @@ export async function verify2FA(otp: string): Promise<{ success: boolean } | { e
     }
 
     try {
-        const user = await getUserByIDFromDB(session.user.id);
+        const user = await getUserByIDQuery(session.user.id);
 
         if (!user) return { error: "User not found" };
 

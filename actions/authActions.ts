@@ -5,7 +5,7 @@ import { AuthError } from "next-auth";
 import { cookies } from "next/headers";
 import { auth, signIn } from "@/auth";
 import { ActionResult, loginSchema, registerSchema } from "@/schemas";
-import { createUserInDB, getUserByEmailFromDB, setLastLoginInDB, setLoginAttemptsInDB } from "./queries";
+import { createUserInQuery, getUserByEmailQuery, setLastLoginQuery, setLoginAttemptsQuery } from "./queries";
 import { isUserOrAdmin } from "./roleActions";
 
 export type LoginInput = typeof loginSchema._type;
@@ -37,7 +37,7 @@ export async function login(values: LoginInput): Promise<ActionResult<LoginResul
 
     try {
         const { email, password } = validatedInput.data;
-        const user = await getUserByEmailFromDB(email);
+        const user = await getUserByEmailQuery(email);
 
         if (!user) {
             return {
@@ -51,10 +51,10 @@ export async function login(values: LoginInput): Promise<ActionResult<LoginResul
 
         try {
             await signIn("credentials", { email, password, redirect: false });
-            await setLastLoginInDB(email);
+            await setLastLoginQuery(email);
         } catch (error) {
             if (error instanceof AuthError) {
-                await setLoginAttemptsInDB(email);
+                await setLoginAttemptsQuery(email);
 
                 return {
                     success: false,
@@ -143,7 +143,7 @@ export async function register(values: RegisterInput): Promise<ActionResult<{ ca
 
     try {
         const { name, email, password } = validatedInput.data;
-        const existingUser = await getUserByEmailFromDB(email);
+        const existingUser = await getUserByEmailQuery(email);
 
         if (existingUser) {
             return {
@@ -156,7 +156,7 @@ export async function register(values: RegisterInput): Promise<ActionResult<{ ca
         }
 
         const hashedPassword = await hash(password, 10);
-        await createUserInDB(name, email, hashedPassword);
+        await createUserInQuery(name, email, hashedPassword);
 
         return {
             success: true,

@@ -3,7 +3,7 @@
 import { ServerError, UserRoleSchema } from "@/schemas";
 import { User } from "@prisma/client";
 import { Session } from "next-auth";
-import { getUserByIDFromDB } from "./queries";
+import { getUserByIDQuery } from "./queries";
 import { TransformedDocument } from "@/app/(protected)/dashboard/documents/[id]/page";
 import { auth } from "@/auth";
 
@@ -30,12 +30,23 @@ export async function checkAdminAccess(): Promise<ServerError | null> {
   return null;
 }
 
+export async function checkUserAccess(): Promise<ServerError | null> {
+  const session = await auth();
+  if (!(await isUserOrAdmin(session))) {
+    return {
+      code: 'UNAUTHORIZED',
+      message: 'User access required',
+    };
+  }
+  return null;
+}
+
 // Get self object
 export async function getSelf(session: Session | null): Promise<User | null> {
   if (!session) {
     return null;
   }
-  const self = await getUserByIDFromDB(session.user.id);
+  const self = await getUserByIDQuery(session.user.id);
   return self;
 }
 

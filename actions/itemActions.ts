@@ -1,97 +1,72 @@
-"use server";
+'use server';
 
-import { z } from 'zod';
-import { auth } from '@/auth';
-import { validateId, UnauthorizedResponse } from '@/schemas';
-import { isUserOrAdmin } from './roleActions';
-import { addDocumentsInDB, deleteDocumentsInDB, getAllDocumentsFromDB, toggleDocumentsOICInDB, updateDocumentStatusInDB } from './queries';
-import { Documents } from '@prisma/client';
+import {
+    setDocumentsQuery,
+    DocumentWithRelations,
+    getAllDocumentsQuery,
+} from './queries';
 import { DocumentsSchema } from '@/schemas/validateDocument';
+import { checkAdminAccess, checkUserAccess } from './roleActions';
+import { ActionResult } from '@/schemas';
 
-const statusSchema = z.string().min(1).max(50);
-
-export async function getAllDocuments(): Promise<Partial<Documents>[] | UnauthorizedResponse> {
-    const session = await auth();
-
-    if (!(await isUserOrAdmin(session))) {
-        return { error: "Unauthorized" };
-    }
-
-    return getAllDocumentsFromDB();
-}
-
-export async function updateDocumentStatus(documentId: string, newStatus: string): Promise<Documents | UnauthorizedResponse> {
-    const session = await auth();
-
-    if (!(await isUserOrAdmin(session))) {
-        return { error: "Unauthorized" };
-    }
-
-    const validDocumentsId = validateId.safeParse(documentId);
-    const validStatus = statusSchema.safeParse(newStatus);
-
-    if (!validDocumentsId.success || !validStatus.success) {
-        return { error: "Invalid document ID or status" };
-    }
-
-    return updateDocumentStatusInDB(documentId, newStatus);
-}
-
-export async function toggleDocumentsOIC(documentId: string): Promise<Documents | UnauthorizedResponse> {
-    const session = await auth();
-
-    if (!(await isUserOrAdmin(session))) {
-        return { error: "Unauthorized" };
-    }
-
-    const validDocumentsId = validateId.safeParse(documentId);
-
-    if (!validDocumentsId.success) {
-        return { error: "Invalid document ID" };
-    }
-
-    return toggleDocumentsOICInDB(documentId);
-}
-
-export async function deleteDocuments(documentId: string): Promise<Documents | UnauthorizedResponse> {
-    const session = await auth();
-
-    if (!(await isUserOrAdmin(session))) {
-        return { error: "Unauthorized" };
-    }
-
-    const validDocumentsId = validateId.safeParse(documentId);
-
-    if (!validDocumentsId.success) {
-        throw new Error('Invalid document ID');
-    }
-
-    return deleteDocumentsInDB(documentId);
-}
-
-export async function addDocuments(documents: unknown): Promise<number | UnauthorizedResponse> {
-    const session = await auth();
-
-    if (!(await isUserOrAdmin(session))) {
-        return { error: "Unauthorized" };
+/**
+ * Retrieves all documents with their relations
+ */
+export async function getAllDocuments(): Promise<ActionResult<DocumentWithRelations[]>> {
+    const userError = await checkUserAccess();
+    if (userError) {
+        return { success: false, error: userError };
     }
 
     try {
-        const parseResult = DocumentsSchema.safeParse(documents);
-
-        if (!parseResult.success) {
-            return {
-                error: "Validation failed: " + parseResult.error.errors
-                    .map(err => `${err.path.join('.')}: ${err.message}`)
-                    .join(', ')
-            };
-        }
-
-        const validatedDocuments = parseResult.data;
-
-        return await addDocumentsInDB(validatedDocuments);
+        const documents = await getAllDocumentsQuery();
+        return { success: true, data: documents };
     } catch (error) {
-        console.error("Error processing documents:", error);
-        return { error: "Failed to process documents - " + error };
+        return {
+            success: false,
+            error: {
+                code: 'DATABASE_ERROR',
+                message: 'Failed to fetch documents',
+            },
+        };
+    }
+}
+
+/**
+ * Adds new document/s
+ */
+export async function addDocuments(
+    documents: DocumentWithRelations[]
+): Promise<ActionResult<number>> {
+    const adminError = await checkAdminAccess();
+    if (adminError) {
+        return { success: false, error: adminError };
+    }
+
+    const parseResult = DocumentsSchema.safeParse(documents);
+    if (!parseResult.success) {
+        return {
+            success: false,
+            error: {
+                code: 'INVALID_INPUT',
+                message: parseResult.error.errors
+                    .map((err) => `${err.path.join('.')}: ${err.message}`)
+                    .join(', '),
+            },
+        };
+    }
+
+    try {
+        const validatedDocuments = parseResult.data;
+        const insertedCount = await setDocumentsQuery(validatedDocuments);
+        return { success: true, data: insertedCount };
+    } catch (error) {
+        return {
+            success: false,
+            error: {
+                code: 'DATABASE_ERROR',
+                message: 'Failed to add documents',
+            },
+        };
     }
 }

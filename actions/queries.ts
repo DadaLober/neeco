@@ -13,6 +13,20 @@ export type EditableUser = Prisma.UserGetPayload<{
     };
 }>;
 
+export type EditableDocument = Prisma.DocumentsGetPayload<{
+    select: {
+        id: true;
+        referenceNo: true;
+        documentType: true;
+        documentStatus: true;
+        purpose: true;
+        supplier: true;
+        oic: true;
+        date: true;
+        departmentId: true;
+    };
+}>;
+
 export type UserWithRelations = Prisma.UserGetPayload<{
     select: {
         id: true;
@@ -27,6 +41,21 @@ export type UserWithRelations = Prisma.UserGetPayload<{
         department: { select: { id: true, name: true } };
         approvalRole: { select: { id: true, name: true, sequence: true } };
     };
+}>;
+
+export type DocumentWithRelations = Prisma.DocumentsGetPayload<{
+    select: {
+        id: true
+        referenceNo: true
+        documentType: true
+        documentStatus: true
+        purpose: true
+        supplier: true
+        oic: true
+        date: true
+        departmentId: true
+        department: { select: { id: true, name: true } }
+    }
 }>;
 
 //Database functions
@@ -72,33 +101,33 @@ export async function updateUserQuery(userId: string, data: EditableUser): Promi
     });
 }
 
-export async function getUserByEmailFromDB(email: string): Promise<User | null> {
+export async function getUserByEmailQuery(email: string): Promise<User | null> {
     return await prisma.user.findUnique({
         where: { email: email },
     })
 }
 
-export async function getUserByIDFromDB(userId: string): Promise<User & { twoFASecret: string | null } | null> {
+export async function getUserByIDQuery(userId: string): Promise<User & { twoFASecret: string | null } | null> {
     return await prisma.user.findUnique({
         where: { id: userId },
     });
 }
 
-export async function setLastLoginInDB(email: string): Promise<User> {
+export async function setLastLoginQuery(email: string): Promise<User> {
     return await prisma.user.update({
         where: { email: email },
         data: { lastLogin: new Date() }
     });
 }
 
-export async function setLoginAttemptsInDB(email: string): Promise<User> {
+export async function setLoginAttemptsQuery(email: string): Promise<User> {
     return await prisma.user.update({
         where: { email: email },
         data: { loginAttempts: { increment: 1 } }
     });
 }
 
-export async function createUserInDB(name: string, email: string, password: string): Promise<User> {
+export async function createUserInQuery(name: string, email: string, password: string): Promise<User> {
     return await prisma.user.create({
         data: {
             name: name,
@@ -108,7 +137,7 @@ export async function createUserInDB(name: string, email: string, password: stri
     });
 }
 
-export async function getAllDocumentsFromDB(): Promise<Partial<Documents>[]> {
+export async function getAllDocumentsQuery(): Promise<DocumentWithRelations[]> {
     return await prisma.documents.findMany({
         select: {
             id: true,
@@ -131,66 +160,16 @@ export async function getAllDocumentsFromDB(): Promise<Partial<Documents>[]> {
     });
 }
 
-export async function toggleDocumentsOICInDB(documentsId: string): Promise<Documents | UnauthorizedResponse> {
-    const documents = await prisma.documents.findUnique({
-        where: { id: documentsId }
-    });
-
-    if (!documents) {
-        return { error: "documents not found" };
-    }
-
-    return await prisma.documents.update({
-        where: { id: documentsId },
-        data: { oic: !documents.oic }
-    });
-}
-
-export async function updateDocumentStatusInDB(documentsId: string, newStatus: string): Promise<Documents> {
-    return await prisma.documents.update({
-        where: { id: documentsId },
-        data: { documentStatus: newStatus }
-    });
-}
-
-export async function deleteDocumentsInDB(documentsId: string): Promise<Documents | UnauthorizedResponse> {
-    return await prisma.documents.delete({
-        where: { id: documentsId }
-    });
-}
-
-export async function setup2FAInDB(userId: string, twoFASecret: string): Promise<User> {
-    return await prisma.user.update({
-        where: { id: userId },
-        data: {
-            twoFASecret: twoFASecret
-        },
-    });
-}
-
-export async function verify2FAInDB(userId: string): Promise<User> {
-    return await prisma.user.update({
-        where: { id: userId },
-        data: { is2FAEnabled: true },
-    });
-}
-
-export async function disable2FAInDB(userId: string): Promise<User> {
-    return prisma.user.update({
-        where: { id: userId },
-        data: { is2FAEnabled: false, twoFASecret: null },
-    });
-}
-
-export async function addDocumentsInDB(documents: Omit<Documents, 'id'>[]): Promise<number> {
+export async function setDocumentsQuery(documents: Omit<EditableDocument, 'id'>[]): Promise<number> {
     try {
         let insertedCount = 0;
 
         await prisma.$transaction(async (tx) => {
             for (const doc of documents) {
-                // 1. Create the document
+                const { ...docData } = doc;
+
                 const createdDoc = await tx.documents.create({
-                    data: doc
+                    data: docData
                 });
 
                 if (doc.departmentId) {
@@ -220,7 +199,7 @@ export async function addDocumentsInDB(documents: Omit<Documents, 'id'>[]): Prom
                             data: {
                                 documentId: createdDoc.id,
                                 roleId: approver.approvalRoleId!,
-                                userId: approver.id, // Pre-assign the user
+                                userId: approver.id,
                                 status: 'pending'
                             }
                         });
@@ -252,7 +231,30 @@ export async function addDocumentsInDB(documents: Omit<Documents, 'id'>[]): Prom
     }
 }
 
-export async function getAllDepartmentsFromDB(): Promise<Department[]> {
+export async function setup2FAInDB(userId: string, twoFASecret: string): Promise<User> {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: {
+            twoFASecret: twoFASecret
+        },
+    });
+}
+
+export async function verify2FAInDB(userId: string): Promise<User> {
+    return await prisma.user.update({
+        where: { id: userId },
+        data: { is2FAEnabled: true },
+    });
+}
+
+export async function disable2FAInDB(userId: string): Promise<User> {
+    return prisma.user.update({
+        where: { id: userId },
+        data: { is2FAEnabled: false, twoFASecret: null },
+    });
+}
+
+export async function getAllDepartmentsQuery(): Promise<Department[]> {
     return prisma.department.findMany({
         select: {
             id: true,
@@ -261,7 +263,7 @@ export async function getAllDepartmentsFromDB(): Promise<Department[]> {
     });
 }
 
-export async function getAllApprovalRolesFromDB(): Promise<ApprovalRole[]> {
+export async function getAllApprovalRolesQuery(): Promise<ApprovalRole[]> {
     return prisma.approvalRole.findMany({
         select: {
             id: true,

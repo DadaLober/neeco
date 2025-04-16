@@ -3,8 +3,8 @@
 import {
   deleteUserQuery,
   EditableUser,
-  getAllApprovalRolesFromDB,
-  getAllDepartmentsFromDB,
+  getAllApprovalRolesQuery,
+  getAllDepartmentsQuery,
   getAllUsersQuery,
   updateUserQuery,
   UserWithRelations
@@ -132,7 +132,7 @@ export async function getAllDepartments(): Promise<ActionResult<Department[]>> {
   }
 
   try {
-    const departments = await getAllDepartmentsFromDB();
+    const departments = await getAllDepartmentsQuery();
     return { success: true, data: departments };
   } catch (error) {
     return {
@@ -155,7 +155,7 @@ export async function getAllApprovalRoles(): Promise<ActionResult<ApprovalRole[]
   }
 
   try {
-    const approvalRoles = await getAllApprovalRolesFromDB();
+    const approvalRoles = await getAllApprovalRolesQuery();
     return { success: true, data: approvalRoles };
   } catch (error) {
     return {
