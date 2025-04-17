@@ -108,12 +108,12 @@ export function RegisterForm() {
         setError("")
         const result = await register(values)
 
-        if ('error' in result) {
-            setError(result.error)
-            form.setError("root", { message: result.error })
+        if (!result.success) {
+            setError(result.error.message)
+            form.setError("root", { message: result.error.message })
             return
         }
-        router.push(result.callbackUrl)
+        router.push(result.data.callbackUrl)
     }
 
     return (

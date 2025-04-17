@@ -37,13 +37,13 @@ export function TwoFactorVerification() {
             if (result) {
                 const loginResult = await complete2FALogin()
 
-                if ('error' in loginResult) {
-                    setError(loginResult.error)
+                if (!loginResult.success) {
+                    setError(loginResult.error.message)
                     resetOtp()
                     return
                 }
 
-                router.push(loginResult.callbackUrl || "/dashboard")
+                router.push(loginResult.data.callbackUrl)
 
             } else {
                 setError("Invalid verification code. Please try again.")

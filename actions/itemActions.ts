@@ -8,6 +8,7 @@ import {
 import { DocumentsSchema } from '@/schemas/validateDocument';
 import { checkAdminAccess, checkUserAccess } from './roleActions';
 import { ActionResult } from '@/schemas';
+import { Documents } from '@prisma/client';
 
 /**
  * Retrieves all documents with their relations
@@ -36,7 +37,7 @@ export async function getAllDocuments(): Promise<ActionResult<DocumentWithRelati
  * Adds new document/s
  */
 export async function addDocuments(
-    documents: DocumentWithRelations[]
+    documents: Omit<Documents, "id">[]
 ): Promise<ActionResult<number>> {
     const adminError = await checkAdminAccess();
     if (adminError) {

@@ -1,11 +1,13 @@
 'use client'
 
-import { analyzeFileContent, FileAnalysis, parseFileContent } from "@/schemas/validateDocument"
 import { useState } from "react"
-import { UnauthorizedResponse } from "@/schemas"
+import { analyzeFileContent, FileAnalysis, parseFileContent } from "@/schemas/validateDocument"
+import { addDocuments } from "@/actions/itemActions"
+import { Documents } from "@prisma/client"
+
 
 interface Props {
-    addDocuments: (documents: unknown) => Promise<number | UnauthorizedResponse>
+    addDocuments: typeof addDocuments
 }
 
 export function useDashboard({ addDocuments }: Props) {
@@ -44,12 +46,16 @@ export function useDashboard({ addDocuments }: Props) {
         setIsProcessing(true)
         try {
             // Parse
-            const parsedData = parseFileContent(fileContent);
+            const parsedData = parseFileContent(fileContent)
 
-            //Call
-            await addDocuments(parsedData);
+            // Call
+            const result = await addDocuments(parsedData)
 
-            alert(`File submitted successfully! ${parsedData.length} rows processed.`);
+            if (result.success) {
+                alert(`File submitted successfully! ${parsedData.length} rows processed.`);
+            } else {
+                alert(`Failed to submit file: ${result.error.message}`);
+            }
         } catch (error) {
             console.error("Error submitting file:", error);
             alert("Failed to submit file: " + (error instanceof Error ? error.message : "Unknown error"));

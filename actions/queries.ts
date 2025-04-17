@@ -1,6 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { UnauthorizedResponse } from '@/schemas';
-import { User, Documents, Department, ApprovalRole, Prisma } from '@prisma/client';
+import { User, Department, ApprovalRole, Prisma } from '@prisma/client';
 
 export type EditableUser = Prisma.UserGetPayload<{
     select: {

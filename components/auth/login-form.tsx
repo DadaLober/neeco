@@ -54,18 +54,18 @@ export function LoginForm() {
         try {
             const result = await login(values)
 
-            if ('error' in result) {
-                setError(result.error)
-                form.setError("root", { message: result.error })
+            if (!result.success) {
+                setError(result.error.message)
+                form.setError("root", { message: result.error.message })
                 return
             }
 
-            if (result.requires2FA) {
-                router.push(`verify-otp/?callbackUrl=${encodeURIComponent(result.callbackUrl || "")}`)
+            if (result.data.requires2FA) {
+                router.push(`verify-otp/?callbackUrl=${encodeURIComponent(result.data.callbackUrl)}`)
                 return
             }
 
-            router.push(result.callbackUrl)
+            router.push(result.data.callbackUrl)
 
         } catch (error) {
             console.error("Login error:", error)

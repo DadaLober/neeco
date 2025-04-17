@@ -1,23 +1,21 @@
 "use client"
 
+import type { getAllDocuments } from "@/actions/itemActions";
 import { CardTable } from "@/components/ui/card-table";
-import { Department, Documents } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
-type DocumentsWithDepartment = Partial<Documents> & { department?: Department | null };
-
 type DocumentsTableProps = {
-    documents: DocumentsWithDepartment[]
+    documents: Awaited<ReturnType<typeof getAllDocuments>>;
 };
 
 export function DocumentsTable({ documents }: DocumentsTableProps) {
     const router = useRouter();
     return (
         <CardTable
-            data={documents}
+            data={documents.success ? documents.data : []}
             columns={[
                 {
-                    header: "Ref No",
+                    header: "Reference No",
                     accessorKey: "referenceNo",
                     cell: (doc) => <div className="font-medium">{doc.referenceNo}</div>,
                 },

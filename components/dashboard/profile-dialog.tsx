@@ -137,7 +137,7 @@ export function ProfileDialog({ isOpen, onOpenChange, user }: ProfileDialogProps
       // Call server action to update profile
       const result = await updateUserProfile(formData);
 
-      if (result.error) {
+      if (!result.success) {
         setValidationError(`Failed to update profile: ${result.error}`);
         return;
       }
