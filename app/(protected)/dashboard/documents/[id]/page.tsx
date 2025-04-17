@@ -19,32 +19,7 @@ import { ApprovalTimeline } from "@/components/users/approval-timeline"
 import { prisma as db } from "@/lib/prisma"
 import { checkUserRoleAndDept, getSelf } from "@/actions/roleActions"
 import { auth } from "@/auth"
-
-export type TransformedDocument = {
-    id: string;
-    referenceNo: string;
-    itemType: string;
-    itemStatus: string;
-    date: Date | null;
-    departmentName: string;
-    oic: boolean;
-    supplier: string | null;
-    purpose: string | null;
-    totalApprovalSteps: number;
-    approvalSteps: Array<{
-        role: {
-            id: number;
-            name: string;
-            sequence: number | null
-        };
-        user: {
-            id: string;
-            name: string | null;
-            email: string | null;
-        } | null;
-        status: string;
-    }>;
-}
+import { DocumentWithRelations } from "@/actions/queries"
 
 type CurrentUser = {
     id: string;
@@ -52,27 +27,43 @@ type CurrentUser = {
     approvalRoleId: number | null;
 };
 
-export async function getDocumentById(id: string): Promise<TransformedDocument | null> {
+export async function getDocumentById(id: string): Promise<DocumentWithRelations | null> {
     try {
         const document = await db.documents.findUnique({
             where: { id },
-            include: {
-                department: true,
+            select: {
+                id: true,
+                referenceNo: true,
+                documentType: true,
+                documentStatus: true,
+                purpose: true,
+                supplier: true,
+                oic: true,
+                date: true,
+                departmentId: true,
+                department: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
                 approvalSteps: {
-                    include: {
-                        role: true,
+                    select: {
+                        role: {
+                            select: {
+                                id: true,
+                                name: true,
+                                sequence: true
+                            }
+                        },
                         user: {
                             select: {
                                 id: true,
                                 name: true,
                                 email: true
                             }
-                        }
-                    },
-                    orderBy: {
-                        role: {
-                            sequence: 'asc'
-                        }
+                        },
+                        status: true
                     }
                 }
             }
@@ -82,20 +73,7 @@ export async function getDocumentById(id: string): Promise<TransformedDocument |
             return null;
         }
 
-        // Transform the data to match the expected format
-        return {
-            id: document.id,
-            referenceNo: document.referenceNo,
-            itemType: document.documentType,
-            itemStatus: document.documentStatus,
-            date: document.date,
-            departmentName: document.department?.name || "Unknown Department",
-            oic: document.oic,
-            supplier: document.supplier,
-            purpose: document.purpose,
-            totalApprovalSteps: Array.from(new Set(document.approvalSteps.map(step => step.role.id))).length,
-            approvalSteps: document.approvalSteps
-        };
+        return document;
     } catch (error) {
         console.error("Error fetching document:", error);
         return null;
@@ -106,11 +84,11 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
     const session = await auth();
     const fullUser = await getSelf(session);
 
-    if (!fullUser) {
+    if (!fullUser.success || fullUser.data === null) {
         throw new Error("User not found");
     }
 
-    const currentUser: Pick<CurrentUser, 'id' | 'role' | 'approvalRoleId'> = fullUser;
+    const currentUser: Pick<CurrentUser, 'id' | 'role' | 'approvalRoleId'> = fullUser.data;
     const resolvedParams = params ? await params : undefined;
     const id = resolvedParams?.id;
 
@@ -124,7 +102,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         notFound();
     }
 
-    type BadgeVariant = "default" | "destructive" | "outline" | "secondary";
+    type BadgeVariant = "default" | "destructive" | "outline" | "secondary" | "success" | "warning";
 
     // Get status badge variant based on status
     const getStatusBadgeVariant = (status: string) => {
@@ -164,7 +142,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         const approvedRoles = Array.from(roleStatusMap.values()).filter(status => status === "approved").length
 
         // For rejected, cap progress at rejection point
-        if (document.itemStatus.toLowerCase() === "rejected") {
+        if (document.documentStatus.toLowerCase() === "rejected") {
             const rejectionIndex = document.approvalSteps.findIndex(s => s.status === "rejected")
             const rejectedRoleId = document.approvalSteps[rejectionIndex]?.role.id
             const indexInUniqueRoles = Array.from(roleStatusMap.keys()).indexOf(rejectedRoleId)
@@ -174,6 +152,10 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         return (approvedRoles / uniqueRoles) * 100
     }
 
+    // Count total unique approval roles
+    const totalApprovalSteps = Array.from(
+        new Set(document.approvalSteps.map(step => step.role.id))
+    ).length;
 
     // Determine if the current user can approve/reject
     const canApprove = await checkUserRoleAndDept(document, currentUser);
@@ -196,9 +178,9 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                             <div className="flex items-center justify-between">
                                 <div>
                                     <CardTitle>{document.referenceNo}</CardTitle>
-                                    <CardDescription>{document.itemType}</CardDescription>
+                                    <CardDescription>{document.documentType}</CardDescription>
                                 </div>
-                                <Badge variant={getStatusBadgeVariant(document.itemStatus) as BadgeVariant}>{document.itemStatus}</Badge>
+                                <Badge variant={getStatusBadgeVariant(document.documentStatus) as BadgeVariant}>{document.documentStatus}</Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="pb-4">
@@ -216,7 +198,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                                         <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
                                         <div>
                                             <p className="font-medium">Department</p>
-                                            <p className="text-sm text-muted-foreground">{document.departmentName}</p>
+                                            <p className="text-sm text-muted-foreground">{document.department?.name || "Unknown Department"}</p>
                                         </div>
                                     </div>
 
@@ -281,12 +263,12 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                                         <span>Progress</span>
                                         <span>
                                             {document.approvalSteps.filter((step) => step.status === "approved").length}/
-                                            {document.totalApprovalSteps} steps
+                                            {totalApprovalSteps} steps
                                         </span>
                                     </div>
                                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full ${document.itemStatus.toLowerCase() === "rejected" ? "bg-red-500" : "bg-green-500"}`}
+                                            className={`h-full ${document.documentStatus.toLowerCase() === "rejected" ? "bg-red-500" : "bg-green-500"}`}
                                             style={{ width: `${calculateApprovalProgress()}%` }}
                                         />
                                     </div>
@@ -296,13 +278,13 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
                         {canApprove && (
                             <CardFooter className="flex flex-col gap-3 pt-4 border-t">
                                 <Button className="w-full bg-green-600 hover:bg-green-700" asChild>
-                                    <Link href={`/documents/${document.id}/view-pdf`}>
+                                    <Link href={`/dashboard/documents/${document.id}/view-pdf`}>
                                         <CheckCircle className="mr-2 h-4 w-4" />
                                         Review & Approve
                                     </Link>
                                 </Button>
                                 <Button variant="destructive" className="w-full" asChild>
-                                    <Link href={`/documents/${document.id}/view-pdf`}>
+                                    <Link href={`/dashboard/documents/${document.id}/view-pdf`}>
                                         <XCircle className="mr-2 h-4 w-4" />
                                         Review & Reject
                                     </Link>

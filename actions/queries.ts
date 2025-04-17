@@ -54,6 +54,7 @@ export type DocumentWithRelations = Prisma.DocumentsGetPayload<{
         date: true
         departmentId: true
         department: { select: { id: true, name: true } }
+        approvalSteps: { select: { role: { select: { id: true, name: true, sequence: true } }, user: { select: { id: true, name: true, email: true } }, status: true } }
     }
 }>;
 
@@ -152,6 +153,25 @@ export async function getAllDocumentsQuery(): Promise<DocumentWithRelations[]> {
                 select: {
                     id: true,
                     name: true,
+                }
+            },
+            approvalSteps: {
+                select: {
+                    role: {
+                        select: {
+                            id: true,
+                            name: true,
+                            sequence: true
+                        }
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    },
+                    status: true
                 }
             },
         },

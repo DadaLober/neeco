@@ -13,11 +13,14 @@ export default async function Layout({ children }: { children: React.ReactNode }
   if (!await isUserOrAdmin(session) && !session) {
     return <AccessDeniedPage />;
   }
-  const data = await getSelf(session);
+  const result = await getSelf(session);
 
-  if (!data) {
+  if (!result.success || result.data == null) {
     return <AccessDeniedPage />;
   }
+
+  const data = result.data;
+
 
   const self = {
     name: data.name,

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { TransformedDocument } from "../page"
+import { DocumentWithRelations } from "@/actions/queries"
 
 const STATUS_STYLES = {
     approved: {
@@ -29,7 +29,7 @@ const STATUS_STYLES = {
 }
 
 interface ViewPdfClientPageProps {
-    document: TransformedDocument;
+    document: DocumentWithRelations;
     pdfUrl?: string;
     backButtonHref?: string;
     customBackIcon?: React.ReactNode;
@@ -79,14 +79,14 @@ export default function ViewPdfClientPage({
                     {document.referenceNo}
                     {showItemType && (
                         <span className="text-sm text-gray-500 ml-2">
-                            {document.itemType}
+                            {document.documentType}
                         </span>
                     )}
                     {showStatus && (
                         <span
-                            className={`ml-2 px-2 py-1 text-sm font-medium border rounded ${getStatusStyle(document.itemStatus)}`}
+                            className={`ml-2 px-2 py-1 text-sm font-medium border rounded ${getStatusStyle(document.documentStatus)}`}
                         >
-                            {document.itemStatus}
+                            {document.documentStatus}
                         </span>
                     )}
                 </div>
