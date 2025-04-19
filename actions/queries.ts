@@ -250,7 +250,7 @@ export async function setDocumentsQuery(documents: Omit<EditableDocument, 'id'>[
     }
 }
 
-export async function setup2FAInDB(userId: string, twoFASecret: string): Promise<User> {
+export async function setup2FAQuery(userId: string, twoFASecret: string): Promise<User> {
     return await prisma.user.update({
         where: { id: userId },
         data: {
@@ -259,14 +259,14 @@ export async function setup2FAInDB(userId: string, twoFASecret: string): Promise
     });
 }
 
-export async function verify2FAInDB(userId: string): Promise<User> {
+export async function verify2FAQuery(userId: string): Promise<User> {
     return await prisma.user.update({
         where: { id: userId },
         data: { is2FAEnabled: true },
     });
 }
 
-export async function disable2FAInDB(userId: string): Promise<User> {
+export async function disable2FAQuery(userId: string): Promise<User> {
     return prisma.user.update({
         where: { id: userId },
         data: { is2FAEnabled: false, twoFASecret: null },

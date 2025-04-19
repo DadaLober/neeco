@@ -39,17 +39,20 @@ export async function checkAdminAccess(): Promise<ServerError | null> {
 
 /**
  * Verifies the current user has user-level access
- * Returns null if authorized, or an error if unauthorized
+ * Returns Session  if authorized, or an error if unauthorized
  */
-export async function checkUserAccess(): Promise<ServerError | null> {
+export async function checkUserAccess(): Promise<ActionResult<Session>> {
   const session = await auth();
-  if (!(await isUserOrAdmin(session))) {
+  if (!(await isUserOrAdmin(session)) || !session) {
     return {
-      code: 'UNAUTHORIZED',
-      message: 'User access required',
+      success: false,
+      error: {
+        code: 'UNAUTHORIZED',
+        message: 'User access required'
+      }
     };
   }
-  return null;
+  return { success: true, data: session };
 }
 
 /**

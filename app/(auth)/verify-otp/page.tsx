@@ -1,16 +1,11 @@
 import { TwoFactorVerification } from "@/components/auth/two-factor"
-import { auth } from "@/auth"
-import { redirect } from "next/navigation"
-import { isUserOrAdmin } from "@/actions/roleActions"
+import { checkUserAccess } from "@/actions/roleActions"
+import { ErrorDisplay } from "@/components/ui/error-display";
 
 export default async function TwoFactorAuthPage() {
-    const session = await auth()
-
-    if (!(await isUserOrAdmin(session)) || !session) {
-        redirect('/login')
-    }
-    if (session.user.is2FAEnabled) {
-        redirect('/dashboard')
+    const result = await checkUserAccess();
+    if (!result.success) {
+        return <ErrorDisplay error={result.error.message} />;
     }
 
     return (

@@ -47,10 +47,10 @@ export function SettingsDialog({ isOpen, onOpenChange, user }: UserSettingsDialo
       if (enabled) {
         const response = await setup2FA();
 
-        if ('error' in response) {
-          throw new Error(response.error);
+        if (!response.success) {
+          throw new Error(response.error.message);
         }
-        setQrCode(response.qrCodeDataURL);
+        setQrCode(response.data.qrCodeDataURL);
         setShowQRDialog(true);
       } else {
         await disable2FA();
@@ -71,8 +71,8 @@ export function SettingsDialog({ isOpen, onOpenChange, user }: UserSettingsDialo
       setLoading(true);
       const response = await verify2FA(otp);
 
-      if ('error' in response) {
-        throw new Error(response.error);
+      if (!response.success) {
+        throw new Error(response.error.message);
       }
 
       setTwoFactorAuthEnabled(true);
