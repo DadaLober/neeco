@@ -14,9 +14,9 @@ import { Documents } from '@prisma/client';
  * Retrieves all documents with their relations
  */
 export async function getAllDocuments(): Promise<ActionResult<DocumentWithRelations[]>> {
-    const userError = await checkUserAccess();
-    if (!userError.success) {
-        return { success: false, error: userError.error };
+    const result = await checkUserAccess();
+    if (!result.success) {
+        return { success: false, error: result.error };
     }
 
     try {

@@ -126,9 +126,9 @@ export async function verify2FA(otp: string): Promise<ActionResult<boolean>> {
  * Disables two-factor authentication for the current user
  */
 export async function disable2FA(): Promise<ActionResult<boolean>> {
-    const userError = await checkUserAccess();
-    if (!userError.success) {
-        return { success: false, error: userError.error };
+    const result = await checkUserAccess();
+    if (!result.success) {
+        return { success: false, error: result.error };
     }
 
     const session = await auth();
