@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { complete2FALogin } from "@/actions/authActions"
-import { verify2FA } from "@/actions/twoFactorAuth"
+import { verify2FA } from "@/actions/twoFactorActions"
 import { Button } from "@/components/ui/button"
 import OTPInput from "./input-otp"
 

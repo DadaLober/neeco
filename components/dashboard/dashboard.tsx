@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useDashboard } from "@/hooks/use-dashboard"
-import { addDocuments } from "@/actions/itemActions"
+import { addDocuments } from "@/actions/documentActions"
 
 export function Dashboard() {
 

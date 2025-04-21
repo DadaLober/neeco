@@ -1,32 +1,21 @@
-import { getSelf, isUserOrAdmin } from "@/actions/roleActions";
-import { auth } from "@/auth";
+import { checkUserAccess } from "@/actions/roleActions";
 
-import AccessDeniedPage from "@/components/admin/access-denied";
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { DynamicBreadcrumb } from "@/components/dashboard/breadcrumbs";
+import { ErrorDisplay } from "@/components/ui/error-display";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-
-  const session = await auth();
-  if (!await isUserOrAdmin(session) && !session) {
-    return <AccessDeniedPage />;
+  const result = await checkUserAccess();
+  if (!result.success) {
+    return <ErrorDisplay error={result.error.message} />;
   }
-  const result = await getSelf(session);
-
-  if (!result.success || result.data == null) {
-    return <AccessDeniedPage />;
-  }
-
-  const data = result.data;
-
 
   const self = {
-    name: data.name,
-    email: data.email,
-    avatar: data.image || "",
-    is2FAEnabled: data.is2FAEnabled || false,
+    name: result.data.user.name ?? "User",
+    email: result.data.user.email ?? "user@example.com",
+    avatar: result.data.user.image ?? "/public/avatars/default.png"
   }
 
   return (

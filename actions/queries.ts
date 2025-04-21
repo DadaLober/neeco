@@ -107,9 +107,34 @@ export async function getUserByEmailQuery(email: string): Promise<User | null> {
     })
 }
 
-export async function getUserByIDQuery(userId: string): Promise<User & { twoFASecret: string | null } | null> {
+export async function getUserByIDQuery(userId: string): Promise<UserWithRelations & { twoFASecret: string | null } | null> {
     return await prisma.user.findUnique({
         where: { id: userId },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            twoFASecret: true,
+            lastLogin: true,
+            loginAttempts: true,
+            departmentId: true,
+            approvalRoleId: true,
+            image: true,
+            department: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            },
+            approvalRole: {
+                select: {
+                    id: true,
+                    name: true,
+                    sequence: true
+                }
+            }
+        }
     });
 }
 
@@ -176,6 +201,48 @@ export async function getAllDocumentsQuery(): Promise<DocumentWithRelations[]> {
             },
         },
         orderBy: { date: 'desc' }
+    });
+}
+
+export async function getDocumentByIdQuery(id: string): Promise<DocumentWithRelations | null> {
+    return await prisma.documents.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            referenceNo: true,
+            documentType: true,
+            documentStatus: true,
+            purpose: true,
+            supplier: true,
+            oic: true,
+            date: true,
+            departmentId: true,
+            department: {
+                select: {
+                    id: true,
+                    name: true
+                }
+            },
+            approvalSteps: {
+                select: {
+                    role: {
+                        select: {
+                            id: true,
+                            name: true,
+                            sequence: true
+                        }
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    },
+                    status: true
+                }
+            },
+        }
     });
 }
 

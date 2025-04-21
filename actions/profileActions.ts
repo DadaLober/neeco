@@ -5,9 +5,8 @@ import { join, basename } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/auth';
 import { ActionResult } from '@/schemas';
-import { isUserOrAdmin } from './roleActions';
+import { checkUserAccess } from './roleActions';
 
 // Configuration
 const AVATAR_UPLOAD_DIR = process.env.AVATAR_UPLOAD_DIR ?? join(process.cwd(), 'public', 'avatars');
@@ -22,17 +21,9 @@ const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 export async function updateUserProfile(
   formData: FormData
 ): Promise<ActionResult<{ message: string }>> {
-  const session = await auth();
-
-  // Authorization check
-  if (!(await isUserOrAdmin(session)) || !session) {
-    return {
-      success: false,
-      error: {
-        code: 'UNAUTHORIZED',
-        message: 'Unauthorized access',
-      },
-    };
+  const result = await checkUserAccess();
+  if (!result.success) {
+    return { success: false, error: result.error };
   }
 
   // Input parsing and validation
@@ -68,7 +59,7 @@ export async function updateUserProfile(
       const bytes = await avatarFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const filename = `${session.user.id}-${Date.now()}-${basename(
+      const filename = `${result.data.user.id}-${Date.now()}-${basename(
         avatarFile.name.replace(/[^a-zA-Z0-9.]/g, '_')
       )}`;
 
@@ -81,7 +72,7 @@ export async function updateUserProfile(
 
     // Update user in database
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: result.data.user.id },
       data: {
         ...(newName && { name: newName }),
         ...(avatarPath && { image: avatarPath }),

@@ -2,7 +2,6 @@
 
 import QRCode from "qrcode";
 import speakeasy from "speakeasy";
-import { auth } from "@/auth";
 import { validateId, otpSchema, ActionResult } from "@/schemas";
 import { checkUserAccess } from "./roleActions";
 import { disable2FAQuery, getUserByIDQuery, setup2FAQuery, verify2FAQuery } from "./queries";
@@ -131,18 +130,7 @@ export async function disable2FA(): Promise<ActionResult<boolean>> {
         return { success: false, error: result.error };
     }
 
-    const session = await auth();
-    if (!session) {
-        return {
-            success: false,
-            error: {
-                code: 'UNAUTHORIZED',
-                message: 'Authentication required'
-            }
-        };
-    }
-
-    const parsedId = validateId.safeParse(session.user.id);
+    const parsedId = validateId.safeParse(result.data.user.id);
     if (!parsedId.success) {
         return {
             success: false,
@@ -154,7 +142,7 @@ export async function disable2FA(): Promise<ActionResult<boolean>> {
     }
 
     try {
-        await disable2FAQuery(session.user.id);
+        await disable2FAQuery(result.data.user.id);
         return { success: true, data: true };
     } catch (error) {
         return {

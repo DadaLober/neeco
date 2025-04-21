@@ -1,11 +1,16 @@
 import { TwoFactorVerification } from "@/components/auth/two-factor"
 import { checkUserAccess } from "@/actions/roleActions"
 import { ErrorDisplay } from "@/components/ui/error-display";
+import { redirect } from "next/navigation";
 
 export default async function TwoFactorAuthPage() {
     const result = await checkUserAccess();
     if (!result.success) {
         return <ErrorDisplay error={result.error.message} />;
+    }
+
+    if (!result.data.user.is2FAEnabled) {
+        return redirect("/login");
     }
 
     return (

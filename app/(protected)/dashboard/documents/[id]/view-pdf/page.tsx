@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getDocumentById } from "../page"
+import { getDocumentById } from "@/actions/documentActions"
 import ViewPdfClientPage from "./ViewPdfClientPage"
+import { ErrorDisplay } from "@/components/ui/error-display"
 
 export const metadata: Metadata = {
     title: "View Document PDF",
@@ -16,13 +17,15 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         notFound();
     }
 
-    const document = await getDocumentById(resolvedParams.id);
+    const result = await getDocumentById(resolvedParams.id);
 
-    if (!document) {
-        console.log("Document not found")
-        notFound()
+    if (!result.success) {
+        return <ErrorDisplay error={result.error.message} />;
     }
 
-    return <ViewPdfClientPage document={document} />
-}
+    if (!result.data) {
+        notFound();
+    }
 
+    return <ViewPdfClientPage document={result.data} />
+}

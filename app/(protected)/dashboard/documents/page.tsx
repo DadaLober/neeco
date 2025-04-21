@@ -1,26 +1,24 @@
-import { auth } from "@/auth";
-import { getAllDocuments } from "@/actions/itemActions";
+import { getAllDocuments } from "@/actions/documentActions";
 import { DocumentsTable } from "@/components/users/documents-table";
-import { isAdmin } from "@/actions/roleActions";
-import AccessDeniedPage from "@/components/admin/access-denied";
+import { checkUserAccess } from "@/actions/roleActions";
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { fetchData } from "@/lib/error-utils";
 
 export default async function DocumentsPage() {
-    const session = await auth();
-    if (!(await isAdmin(session) || !session)) {
-        return <AccessDeniedPage />
+    const result = await checkUserAccess();
+    if (!result.success) {
+        return <ErrorDisplay error={result.error.message} />;
     }
 
-    const result = await fetchData({
+    const data = await fetchData({
         documents: getAllDocuments()
     });
 
-    if (!result.success) {
-        return <ErrorDisplay error={result.error} />;
+    if (!data.success) {
+        return <ErrorDisplay error={data.error} />;
     }
 
-    const { documents } = result.data;
+    const { documents } = data.data;
 
     return (
         <DocumentsTable documents={documents} />

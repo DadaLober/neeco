@@ -1,32 +1,31 @@
-import { auth } from "@/auth";
-import { isAdmin } from "@/actions/roleActions";
+import { checkUserAccess } from "@/actions/roleActions";
 import {
   getAllUsers,
   getAllDepartments,
   getAllApprovalRoles,
 } from "@/actions/adminActions"
 import { UsersTable } from "@/components/admin/users-table"
-import AccessDeniedPage from "@/components/admin/access-denied"
 import { ErrorDisplay } from "@/components/ui/error-display";
 import { fetchData } from "@/lib/error-utils";
 
 export default async function UsersPage() {
-  const session = await auth();
-  if (!(await isAdmin(session) || !session)) {
-    return <AccessDeniedPage />
+  const result = await checkUserAccess();
+
+  if (!result.success) {
+    return <ErrorDisplay error={result.error.message} />;
   }
 
-  const result = await fetchData({
+  const data = await fetchData({
     users: getAllUsers(),
     departments: getAllDepartments(),
     approvalRoles: getAllApprovalRoles()
   });
 
-  if (!result.success) {
-    return <ErrorDisplay error={result.error} />;
+  if (!data.success) {
+    return <ErrorDisplay error={data.error} />;
   }
 
-  const { users, departments, approvalRoles } = result.data;
+  const { users, departments, approvalRoles } = data.data;
 
   return (
     <UsersTable

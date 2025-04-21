@@ -4,6 +4,7 @@ import {
     setDocumentsQuery,
     DocumentWithRelations,
     getAllDocumentsQuery,
+    getDocumentByIdQuery,
 } from './queries';
 import { DocumentsSchema } from '@/schemas/validateDocument';
 import { checkAdminAccess, checkUserAccess } from './roleActions';
@@ -28,6 +29,30 @@ export async function getAllDocuments(): Promise<ActionResult<DocumentWithRelati
             error: {
                 code: 'DATABASE_ERROR',
                 message: 'Failed to fetch documents',
+            },
+        };
+    }
+}
+
+/**
+ * Retrieves a document by its ID with relations
+ */
+export async function getDocumentById(id: string): Promise<ActionResult<DocumentWithRelations | null>> {
+    const result = await checkUserAccess();
+    if (!result.success) {
+        return { success: false, error: result.error };
+    }
+
+    try {
+        const documents = await getDocumentByIdQuery(id);
+
+        return { success: true, data: documents };
+    } catch (error) {
+        return {
+            success: false,
+            error: {
+                code: 'DATABASE_ERROR',
+                message: 'Failed to fetch document',
             },
         };
     }

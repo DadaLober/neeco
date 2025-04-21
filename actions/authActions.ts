@@ -3,10 +3,10 @@
 import { hash } from "bcrypt";
 import { AuthError } from "next-auth";
 import { cookies } from "next/headers";
-import { auth, signIn } from "@/auth";
+import { signIn } from "@/auth";
 import { ActionResult, loginSchema, registerSchema } from "@/schemas";
 import { createUserInQuery, getUserByEmailQuery, setLastLoginQuery, setLoginAttemptsQuery } from "./queries";
-import { isUserOrAdmin } from "./roleActions";
+import { checkUserAccess, isUserOrAdmin } from "./roleActions";
 
 export type LoginInput = typeof loginSchema._type;
 export type RegisterInput = typeof registerSchema._type;
@@ -95,16 +95,9 @@ export async function login(values: LoginInput): Promise<ActionResult<LoginResul
  * Completes the 2FA authentication flow
  */
 export async function complete2FALogin(): Promise<ActionResult<{ callbackUrl: string }>> {
-    const session = await auth();
-
-    if (!(await isUserOrAdmin(session))) {
-        return {
-            success: false,
-            error: {
-                code: "UNAUTHORIZED",
-                message: "You must be logged in to complete 2FA"
-            }
-        };
+    const result = await checkUserAccess();
+    if (!result.success) {
+        return { success: false, error: result.error };
     }
 
     try {

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 
 // Authentication and Theme imports
-import { setup2FA, verify2FA, disable2FA } from "@/actions/twoFactorAuth";
+import { setup2FA, verify2FA, disable2FA } from "@/actions/twoFactorActions";
 import { useTheme } from 'next-themes';
 import Image from "next/image";
 

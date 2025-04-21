@@ -1,9 +1,8 @@
 'use server';
 
-import { ServerError, UserRoleSchema, ActionResult, validateId } from "@/schemas";
-import { User } from "@prisma/client";
+import { ServerError, UserRoleSchema, ActionResult } from "@/schemas";
 import { Session } from "next-auth";
-import { getUserByIDQuery, DocumentWithRelations } from "./queries";
+import { getUserByIDQuery, DocumentWithRelations, UserWithRelations } from "./queries";
 import { auth } from "@/auth";
 
 /**
@@ -58,7 +57,8 @@ export async function checkUserAccess(): Promise<ActionResult<Session>> {
 /**
  * Retrieves the current user's full profile
  */
-export async function getSelf(session: Session | null): Promise<ActionResult<User | null>> {
+export async function getSelf(): Promise<ActionResult<UserWithRelations | null>> {
+  const session = await auth();
   if (!session) {
     return {
       success: false,

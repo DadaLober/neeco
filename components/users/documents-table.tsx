@@ -1,6 +1,6 @@
 "use client"
 
-import type { getAllDocuments } from "@/actions/itemActions";
+import type { getAllDocuments } from "@/actions/documentActions";
 import { CardTable } from "@/components/ui/card-table";
 import { useRouter } from "next/navigation";
 

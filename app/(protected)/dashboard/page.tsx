@@ -1,13 +1,11 @@
-import { isUserOrAdmin } from "@/actions/roleActions";
-import { auth } from "@/auth";
+import { checkUserAccess } from "@/actions/roleActions";
 import { Dashboard } from "@/components/dashboard/dashboard";
-import { redirect } from "next/navigation";
+import { ErrorDisplay } from "@/components/ui/error-display";
 
 export default async function DashboardPage() {
-  const session = await auth();
-
-  if (!await isUserOrAdmin(session) && !session) {
-    redirect("/login");
+  const result = await checkUserAccess();
+  if (!result.success) {
+    return <ErrorDisplay error={result.error.message} />;
   }
 
   return <Dashboard />

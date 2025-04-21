@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { analyzeFileContent, FileAnalysis, parseFileContent } from "@/schemas/validateDocument"
-import { addDocuments } from "@/actions/itemActions"
+import { addDocuments } from "@/actions/documentActions"
 import { Documents } from "@prisma/client"
 
 
