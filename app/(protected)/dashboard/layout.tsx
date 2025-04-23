@@ -15,7 +15,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const self = {
     name: result.data.user.name ?? "User",
     email: result.data.user.email ?? "user@example.com",
-    avatar: result.data.user.image ?? "/public/avatars/default.png"
+    avatar: result.data.user.image ?? "/avatars/default.png"
   }
 
   return (

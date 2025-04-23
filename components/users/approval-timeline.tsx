@@ -164,7 +164,7 @@ export function ApprovalTimeline({ steps }: ApprovalTimelineProps) {
                                             <ul className="py-1">
                                                 {stepsForRole.map(step => (
                                                     <li
-                                                        key={`${roleId}-${step.userId}`}
+                                                        key={`${roleId}-${step.user?.id}`}
                                                         className="px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer"
                                                         onClick={() => {
                                                             handleUserSelect(roleId, step.user?.id || "")
