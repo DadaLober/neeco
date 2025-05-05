@@ -26,9 +26,14 @@ const data = {
       isActive: true,
     },
     {
-      title: "Documents",
-      url: "/dashboard/documents",
+      title: "Upload",
+      url: "/dashboard/upload",
       icon: BookOpen,
+      items: [{
+        title: "Guide",
+        url: "/dashboard/guide",
+        icon: HelpCircle,
+      },]
     },
     {
       title: "Users",

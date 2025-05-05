@@ -55,7 +55,7 @@ export default function ViewPdfClientPage({
         return `${styles.bg} ${styles.text} ${styles.border}`
     }
 
-    const defaultBackHref = `/dashboard/documents/${document.id}`
+    const defaultBackHref = `/dashboard/${document.id}`
 
     const handleApproveClick = () => {
         setApproveDialogOpen(true);

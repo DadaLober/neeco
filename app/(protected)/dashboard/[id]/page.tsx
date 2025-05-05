@@ -121,7 +121,7 @@ export default async function DocumentPage({ params }: { params: Promise<{ id: s
         <div className="space-y-4 p-2">
             <div className="flex justify-end">
                 <Button asChild variant="outline" size="sm">
-                    <Link href="/dashboard/documents">
+                    <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back
                     </Link>
@@ -199,7 +199,7 @@ function DocumentInfoCard({ document }: { document: DocumentWithRelations }) {
             </CardContent>
             <CardFooter className="bg-muted/50 flex justify-end gap-3 pt-3 pb-3 px-6 border-t">
                 <Button variant="outline" className="w-auto" asChild>
-                    <Link href={`/dashboard/documents/${document.id}/view-pdf`}>
+                    <Link href={`/dashboard/${document.id}/view-pdf`}>
                         <FileIcon className="mr-2 h-4 w-4" />
                         View PDF
                     </Link>

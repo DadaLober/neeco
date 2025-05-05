@@ -96,7 +96,7 @@ export function DocumentsTable({ documents }: DocumentsTableProps) {
                 {
                     label: "View",
                     onClick: (doc) => {
-                        router.push(`documents/${doc.id}`);
+                        router.push(`./dashboard/${doc.id}`);
                     },
                 },
                 // {

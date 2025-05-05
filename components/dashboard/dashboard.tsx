@@ -1,10 +1,9 @@
 "use client"
 
-import Link from "next/link"
 import { FileUploader } from "./file-uploader"
 import { FileViewer } from "./file-viewer"
 import { Card, CardContent } from "@/components/ui/card"
-import { HelpCircle, Send, Database, AlertCircle } from "lucide-react"
+import { Send, Database, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -131,16 +130,6 @@ export function Dashboard() {
                         </CardContent>
                     </Card>
                 )}
-            </div>
-
-            <div className="flex justify-center">
-                <Link
-                    href="/dashboard/getting-started"
-                    className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
-                >
-                    <HelpCircle className="h-4 w-4" />
-                    <span>Getting Started Guide</span>
-                </Link>
             </div>
         </div>
     )
